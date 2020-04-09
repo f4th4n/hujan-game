@@ -1,0 +1,16 @@
+{
+	"name": "hujan",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"scripts": {
+		"start": "http-server --ssl -c-1 -p 8080 -a 127.0.0.1 -C ./excluded/cert.pem --key ./excluded/key.pem"
+	},
+	"prettier": {
+		"tabWidth": 2,
+		"semi": false,
+		"singleQuote": true,
+		"useTabs": true
+	},
+	"dependencies": {}
+}
