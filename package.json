@@ -4,13 +4,21 @@
 	"main": "index.js",
 	"license": "MIT",
 	"scripts": {
+		"watch": "./node_modules/.bin/gulp watch",
+		"build": "./node_modules/.bin/gulp build",
 		"start": "http-server --ssl -c-1 -p 8080 -a 127.0.0.1 -C ./excluded/cert.pem --key ./excluded/key.pem"
 	},
 	"prettier": {
 		"tabWidth": 2,
 		"semi": false,
 		"singleQuote": true,
-		"useTabs": true
+		"useTabs": true,
+		"printWidth": 120
 	},
-	"dependencies": {}
+	"dependencies": {
+		"gulp": "^4.0.2",
+		"gulp-concat": "^2.6.1",
+		"gulp-terser": "^1.2.0",
+		"gulp-watch": "^5.0.1"
+	}
 }
