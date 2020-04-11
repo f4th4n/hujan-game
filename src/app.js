@@ -29,7 +29,7 @@ app.startGame = () => {
 		}
 
 		cc.LoaderScene.preload(
-			['assets/img/flower_1.png', 'assets/img/cloud.png', 'assets/img/ground.png', 'assets/img/raindrop.png'],
+			resource.preload.playScene,
 			async function () {
 				if (helper.insideFBIframe()) {
 					await FBInstant.startGameAsync()

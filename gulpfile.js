@@ -3,7 +3,18 @@ const concat = require('gulp-concat')
 const watch = require('gulp-watch')
 const terser = require('gulp-terser')
 
-const jsFiles = ['src/helper.js', 'src/config.js', 'src/scenes/**/*.js', 'src/app.js']
+const jsFiles = [
+	'src/config.js',
+	'src/helper.js',
+	'src/model.js',
+	'src/resource.js',
+	'src/scenes/layers/play/bg.js',
+	'src/scenes/layers/play/level.js',
+	'src/scenes/layers/layers.js',
+	'src/scenes/home_scene.js',
+	'src/scenes/play_scene.js',
+	'src/app.js',
+]
 
 const taskWatch = () => {
 	return watch('src/**/*.js', { ignoreInitial: false }, () => {
