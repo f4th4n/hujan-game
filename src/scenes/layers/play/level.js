@@ -1,5 +1,8 @@
 const LayersPlayLevel = cc.Layer.extend({
-	plants: [],
+	plants: [], // TODO
+	isCloudMoving: false,
+	lastTimeCloudAnimated: +new Date(),
+
 	ctor: function () {
 		this._super()
 		const cloud = this.printCloud()
@@ -10,15 +13,31 @@ const LayersPlayLevel = cc.Layer.extend({
 	printCloud: function () {
 		const cloud = cc.Sprite.create(resource.img.cloud)
 		cloud.setAnchorPoint(0, 0)
-		cloud.setPosition((50 / 100) * cc.director.getWinSize().width, (80 / 100) * cc.director.getWinSize().height)
 		cloud.setScale(0.2)
+		cloud.setPosition(model.data.cloudPosX, (80 / 100) * cc.director.getWinSize().height)
 		this.addChild(cloud, helper.zOrder.medium)
-		window.cloud = cloud
+		cloud.schedule(() => {
+			const delay = 150
+			if (this.isCloudMoving) return
+			if (+new Date() - this.lastTimeCloudAnimated < delay) return
+
+			this.isCloudMoving = true
+			const time = Math.abs(model.data.cloudPosX - cloud.x) / 1000
+			const timeClamp = time < 0.5 ? 0.5 : time // minimum animate in 500 ms
+			const moveTo = cc.moveTo(timeClamp, cc.p(model.data.cloudPosX, cloud.y)).clone().easing(cc.easeBackOut())
+
+			const callback = new cc.CallFunc(() => {
+				this.isCloudMoving = false
+				this.lastTimeCloudAnimated = +new Date()
+			})
+			cloud.runAction(cc.sequence(moveTo, callback))
+		})
+
 		return cloud
 	},
 	printRaindrop: function (cloud) {
 		const particleRain = cc.ParticleSystem.create(resource.particles.rain)
-		particleRain.setPosition(cloud.width / 2, (30 / 100) * cloud.height * -1)
+		particleRain.setPosition(cloud.width / 2, (35 / 100) * cloud.height * -1)
 		particleRain.setAnchorPoint(0, 0)
 		particleRain.setDrawMode(cc.ParticleSystem.TEXTURE_MODE)
 		particleRain.setBlendFunc(cc.BlendFunc.ALPHA_PREMULTIPLIED)
