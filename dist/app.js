@@ -26,8 +26,11 @@ const event = new Event('model')
 
 var model = {
 	data: {
-		bg: null, // cc.Node
-		cloudPosX: 0,
+		cloud: {
+			posX: 0,
+			moveDelay: false,
+			animating: true,
+		},
 	},
 }
 
@@ -64,13 +67,7 @@ const LayersPlayBg = cc.Layer.extend({
 		this._super()
 		this.printBg()
 	},
-	printBg: function () {
-		const bg = new cc.Sprite(resource.img.bg)
-		bg.setAnchorPoint(0, 0)
-		bg.scaleX = 20
-		model.data.bg = bg
-		this.addChild(bg, helper.zOrder.low)
-	},
+	printBg: function () {},
 })
 
 const LayersPlayLevel = cc.Layer.extend({
@@ -82,30 +79,37 @@ const LayersPlayLevel = cc.Layer.extend({
 		this._super()
 		const cloud = this.printCloud()
 		this.printRaindrop(cloud)
-		this.printPlants()
+		const ground = this.printGround()
+		this.printPlants(ground)
 		this.printLabels()
 	},
 	printCloud: function () {
 		const cloud = cc.Sprite.create(resource.img.cloud)
 		cloud.setAnchorPoint(0, 0)
 		cloud.setScale(0.2)
-		cloud.setPosition(model.data.cloudPosX, (80 / 100) * cc.director.getWinSize().height)
+		cloud.setPosition(model.data.cloud.posX, (80 / 100) * cc.director.getWinSize().height)
 		this.addChild(cloud, helper.zOrder.medium)
+
 		cloud.schedule(() => {
-			const delay = 150
+			const delay = 100
+			if (!model.data.cloud.animating) return
 			if (this.isCloudMoving) return
-			if (+new Date() - this.lastTimeCloudAnimated < delay) return
+
+			const timeLapse = +new Date() - this.lastTimeCloudAnimated
+			if (timeLapse < delay && model.data.cloud.moveDelay) return // throttle for smoother animation
 
 			this.isCloudMoving = true
-			const time = Math.abs(model.data.cloudPosX - cloud.x) / 1000
+			const time = Math.abs(model.data.cloud.posX - cloud.x) / 1000
 			const timeClamp = time < 0.5 ? 0.5 : time // minimum animate in 500 ms
-			const moveTo = cc.moveTo(timeClamp, cc.p(model.data.cloudPosX, cloud.y)).clone().easing(cc.easeBackOut())
+			const moveTo = cc.moveTo(timeClamp, cc.p(model.data.cloud.posX, cloud.y))
+			const moveToEasing = moveTo.clone().easing(cc.easeBackOut())
 
 			const callback = new cc.CallFunc(() => {
 				this.isCloudMoving = false
 				this.lastTimeCloudAnimated = +new Date()
+				model.data.cloud.animating = false
 			})
-			cloud.runAction(cc.sequence(moveTo, callback))
+			cloud.runAction(cc.sequence(moveToEasing, callback))
 		})
 
 		return cloud
@@ -117,15 +121,21 @@ const LayersPlayLevel = cc.Layer.extend({
 		particleRain.setDrawMode(cc.ParticleSystem.TEXTURE_MODE)
 		particleRain.setBlendFunc(cc.BlendFunc.ALPHA_PREMULTIPLIED)
 		//particleRain.scale = 0.15
-		window.particleRain = particleRain
 		cloud.addChild(particleRain, helper.zOrder.low)
 	},
-	printPlants: function () {
-		if (model.data.bg.height === 0) return setTimeout(() => this.printPlants(), 5)
+	printGround: function () {
+		const ground = new cc.Sprite(resource.img.ground)
+		ground.setAnchorPoint(0, 0)
+		ground.scaleX = 20
+		this.addChild(ground, helper.zOrder.medium + 1)
+		return ground
+	},
+	printPlants: function (ground) {
+		if (ground.height === 0) return setTimeout(() => this.printPlants(ground), 5)
 
 		const flower = cc.Sprite.create(resource.img.flower1)
 		flower.setAnchorPoint(0, 0)
-		flower.setPosition((10 / 100) * cc.director.getWinSize().width, model.data.bg.y + model.data.bg.height)
+		flower.setPosition((10 / 100) * cc.director.getWinSize().width, ground.y + ground.height)
 		flower.setScale(0.2)
 		this.addChild(flower, helper.zOrder.medium)
 	},
@@ -164,20 +174,23 @@ const PlayScene = cc.Scene.extend({
 	createLayers: function () {
 		this.addChild(new layers.play.Bg(), helper.zOrder.low)
 		this.addChild(new layers.play.Level(), helper.zOrder.medium)
-		window.f = this
 	},
 	addListener: function () {
 		const listener1 = cc.EventListener.create({
 			event: cc.EventListener.TOUCH_ONE_BY_ONE,
-			// When "swallow touches" is true, then returning 'true' from the onTouchBegan method will "swallow" the touch event, preventing other listeners from using it.
+			// When swallow touches is true, then returning 'true' from the onTouchBegan method will "swallow" the touch event, preventing other listeners from using it
 			swallowTouches: true,
 			onTouchBegan: function (touch, event) {
-				model.data.cloudPosX = touch.getLocationX()
+				model.data.cloud.posX = touch.getLocationX()
+				model.data.cloud.moveDelay = false
+				model.data.cloud.animating = true
 				return true
 			},
 			// trigger when moving touch
 			onTouchMoved: function (touch, event) {
-				model.data.cloudPosX = touch.getLocationX()
+				model.data.cloud.posX = touch.getLocationX()
+				model.data.cloud.moveDelay = true
+				model.data.cloud.animating = true
 			},
 			// process the touch end event
 			//onTouchEnded: function (touch, event) {

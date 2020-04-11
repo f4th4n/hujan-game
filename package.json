@@ -13,7 +13,7 @@
 		"semi": false,
 		"singleQuote": true,
 		"useTabs": true,
-		"printWidth": 120
+		"printWidth": 110
 	},
 	"dependencies": {
 		"gulp": "^4.0.2",
