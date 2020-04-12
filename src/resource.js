@@ -4,6 +4,7 @@ const resource = {
 		flower1: 'assets/img/flower_1.png',
 		cloud: 'assets/img/cloud.png',
 		ground: 'assets/img/ground.png',
+		seed: 'assets/img/seed.png',
 	},
 	fonts: {
 		pou: { type: 'font', name: 'Pou', srcs: ['dist/fonts/Pou-RMR6.ttf'] },
@@ -21,6 +22,7 @@ resource.preload = {
 		resource.img.flower1,
 		resource.img.cloud,
 		resource.img.ground,
+		resource.img.seed,
 		resource.fonts.pou,
 		resource.particles.rain,
 	],
