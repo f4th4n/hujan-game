@@ -5,6 +5,8 @@ const resource = {
 		cloud: 'assets/img/cloud.png',
 		ground: 'assets/img/ground.png',
 		seed: 'assets/img/seed.png',
+		fingerPoint1: 'assets/img/finger_point_1.png',
+		fingerPoint2: 'assets/img/finger_point_2.png',
 	},
 	fonts: {
 		pou: { type: 'font', name: 'Pou', srcs: ['dist/fonts/Pou-RMR6.ttf'] },

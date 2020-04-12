@@ -1,6 +1,6 @@
 const layers = {
 	play: {
-		Bg: LayersPlayBg,
-		Level: LayersPlayLevel,
+		Bg: null, // cc.Layer
+		Level: null, // cc.Layer
 	},
 }

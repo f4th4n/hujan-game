@@ -2,6 +2,79 @@ const config = {
 	debug: false,
 }
 
+const data = {
+	categories: ['flower', 'wood', 'fruit', 'herb', 'magical'],
+	levels: [
+		{
+			index: 1,
+			dropRate: {
+				flower: 0.75,
+				wood: 0.25,
+				fruit: 0,
+				herb: 0,
+				magical: 0,
+			},
+		},
+		{
+			index: 2,
+			dropRate: {
+				flower: 0.3,
+				wood: 0.7,
+				fruit: 0,
+				herb: 0,
+				magical: 0,
+			},
+		},
+		{
+			index: 3,
+			dropRate: {
+				flower: 0.2,
+				wood: 0.2,
+				fruit: 0.6,
+				herb: 0,
+				magical: 0,
+			},
+		},
+	],
+	plants: [
+		{
+			id: 1,
+			name: 'Melati',
+			category: 'flower',
+			bloomInSeconds: 5,
+			funFact: '',
+		},
+		{
+			id: 2,
+			name: 'Mawar',
+			category: 'flower',
+			bloomInSeconds: 5,
+			funFact: '',
+		},
+		{
+			id: 3,
+			name: 'Sepatu',
+			category: 'flower',
+			bloomInSeconds: 5,
+			funFact: '',
+		},
+		{
+			id: 4,
+			name: 'Bangkai',
+			category: 'flower',
+			bloomInSeconds: 5,
+			funFact: '',
+		},
+		{
+			id: 5,
+			name: 'Tulip',
+			category: 'flower',
+			bloomInSeconds: 5,
+			funFact: '',
+		},
+	],
+}
+
 const helper = {
 	virtual: {
 		width: 480,
@@ -22,15 +95,41 @@ const helper = {
 	},
 }
 
-const event = new Event('model')
+/*
+	model.user.plantsOnGround: { id: int, posX: int }
+	model.user.plantsCollection: { id: int, count: int }
+*/
 
 var model = {
-	data: {
+	user: {
+		firstTime: true,
+		cloudPosX: -500,
+		plantsOnGround: [],
+		plantsCollection: [],
+	},
+	local: {
 		cloud: {
-			posX: 0,
 			moveDelay: false,
-			animating: true,
 		},
+	},
+	async initUser() {
+		// localStorage.removeItem('user')
+		const user = localStorage.getItem('user')
+		if (user !== null) {
+			this.user = JSON.parse(user)
+		}
+	},
+	setUser(key, value) {
+		// TODO validation
+		// TODO upload to cloud, e.g facebook
+		this.user[key] = value
+
+		// temporary: persist on localStorage
+		localStorage.setItem('user', JSON.stringify(this.user))
+	},
+	getUser(key) {
+		// TODO make sure data is synced with vendor
+		return this.user[key]
 	},
 }
 
@@ -41,6 +140,8 @@ const resource = {
 		cloud: 'assets/img/cloud.png',
 		ground: 'assets/img/ground.png',
 		seed: 'assets/img/seed.png',
+		fingerPoint1: 'assets/img/finger_point_1.png',
+		fingerPoint2: 'assets/img/finger_point_2.png',
 	},
 	fonts: {
 		pou: { type: 'font', name: 'Pou', srcs: ['dist/fonts/Pou-RMR6.ttf'] },
@@ -64,7 +165,65 @@ resource.preload = {
 	],
 }
 
-const LayersPlayBg = cc.Layer.extend({
+const PrefabSeed = cc.Sprite.extend({
+	ctor: function () {
+		this._super()
+		this.initWithFile(resource.img.seed)
+		this.setAnchorPoint(0, 0)
+		this.setPosition(200, 0)
+		this.setScale(0.2)
+		this.setPositionX((60 / 100) * cc.director.getWinSize().width)
+	},
+	onEnter: function () {},
+})
+
+const PrefabPlant = cc.Sprite.extend({
+	ctor: function () {
+		this._super()
+		this.initWithFile(resource.img.flower1)
+		this.setAnchorPoint(0, 0)
+		this.setScale(0.2)
+		this.setPositionX((10 / 100) * cc.director.getWinSize().width)
+	},
+	onEnter: function () {},
+})
+
+const PrefabFingerPointHelper = cc.Sprite.extend({
+	flipFlop: true,
+	ctor: function () {
+		this._super()
+
+		const winSize = cc.director.getWinSize()
+		this.initWithFile(resource.img.fingerPoint1)
+		this.setPosition(winSize.width / 2, winSize.height / 2)
+
+		this.flipImage()
+	},
+	flipImage: function () {
+		this.schedule(() => {
+			if (!model.user.firstTime) {
+				this.removeFromParent()
+				return
+			}
+
+			if (this.flipFlop) {
+				this.setTexture(resource.img.fingerPoint2)
+			} else {
+				this.setTexture(resource.img.fingerPoint1)
+			}
+			this.flipFlop = !this.flipFlop
+		}, 0.7)
+	},
+})
+
+const layers = {
+	play: {
+		Bg: null, // cc.Layer
+		Level: null, // cc.Layer
+	},
+}
+
+layers.play.Bg = cc.Layer.extend({
 	ctor: function () {
 		this._super()
 		this.printBg()
@@ -72,27 +231,35 @@ const LayersPlayBg = cc.Layer.extend({
 	printBg: function () {},
 })
 
-const LayersPlayLevel = cc.Layer.extend({
+layers.play.Level = cc.Layer.extend({
 	seeds: [], // TODO
 	plants: [], // TODO
 
 	ctor: function () {
 		this._super()
+		this.printLabels()
+		this.printHelper()
 		const cloud = this.printCloud()
 		const raindrop = this.printRaindrop(cloud)
 		const ground = this.printGround()
-		const flower = this.printPlants(ground)
-		this.printLabels()
-		const seed = this.printSeed()
+		//const flower = this.printPlants(ground)
+		//const seed = this.printSeed()
 
 		this.scheduleCloud(cloud, raindrop)
-		this.scheduleGround(ground, [flower, seed])
+		this.scheduleGround(ground, []) // scheduleOnce
+	},
+	printHelper() {
+		if (!model.user.firstTime) return
+
+		const fingerPointHelper = new PrefabFingerPointHelper()
+		this.addChild(fingerPointHelper, helper.zOrder.low)
+		return fingerPointHelper
 	},
 	printCloud: function () {
 		const cloud = cc.Sprite.create(resource.img.cloud)
 		cloud.setAnchorPoint(0, 0)
 		cloud.setScale(0.2)
-		cloud.setPosition(model.data.cloud.posX, (80 / 100) * cc.director.getWinSize().height)
+		cloud.setPosition(model.user.cloudPosX, (80 / 100) * cc.director.getWinSize().height)
 		this.addChild(cloud, helper.zOrder.medium)
 
 		return cloud
@@ -113,16 +280,19 @@ const LayersPlayLevel = cc.Layer.extend({
 		this.addChild(ground, helper.zOrder.medium)
 		return ground
 	},
+	/*
 	printPlants: function (ground) {
-		const flower = cc.Sprite.create(resource.img.flower1)
-		flower.setAnchorPoint(0, 0)
-		flower.setScale(0.2)
-		flower.setPositionX((10 / 100) * cc.director.getWinSize().width)
-		ground.addChild(flower, helper.zOrder.medium)
-		return flower
+		const plant = new PrefabPlant()
+		ground.addChild(plant, helper.zOrder.low)
+		return plant
 	},
+	printSeed: function () {
+		const seed = new PrefabSeed()
+		this.addChild(seed, helper.zOrder.low)
+		return seed
+	},
+	*/
 	printLabels: function () {
-		// TODO: remove this, just sample
 		const label = cc.LabelTTF.create('Hujan', resource.fonts.pou.name, 24)
 		label.setPosition(
 			(1 / 100) * cc.director.getWinSize().width,
@@ -132,15 +302,6 @@ const LayersPlayLevel = cc.Layer.extend({
 		label.setAnchorPoint(0, 1)
 		this.addChild(label, helper.zOrder.medium)
 	},
-	printSeed: function () {
-		const seed = new cc.Sprite(resource.img.seed)
-		seed.setAnchorPoint(0, 0)
-		seed.setPosition(200, 0)
-		seed.setScale(0.2)
-		seed.setPositionX((60 / 100) * cc.director.getWinSize().width)
-		this.addChild(seed, helper.zOrder.low)
-		return seed
-	},
 
 	// ---------------------------------------------------------------------------------------------- schedule
 
@@ -149,22 +310,20 @@ const LayersPlayLevel = cc.Layer.extend({
 	scheduleCloud: function (cloud, raindrop) {
 		cloud.schedule(() => {
 			const delay = 100
-			if (!model.data.cloud.animating) return
 			if (this.isCloudMoving) return
 
 			const timeLapse = +new Date() - this.lastTimeCloudAnimated
-			if (timeLapse < delay && model.data.cloud.moveDelay) return // throttle for smoother animation
+			if (timeLapse < delay && model.local.cloud.moveDelay) return // throttle for smoother animation
 
 			this.isCloudMoving = true
-			const time = Math.abs(model.data.cloud.posX - cloud.x) / 1000
+			const time = Math.abs(model.user.cloudPosX - cloud.x) / 1000
 			const timeClamp = time < 0.5 ? 0.5 : time // minimum animate in 500 ms
-			const moveTo = cc.moveTo(timeClamp, cc.p(model.data.cloud.posX, cloud.y))
+			const moveTo = cc.moveTo(timeClamp, cc.p(model.user.cloudPosX, cloud.y))
 			const moveToEasing = moveTo.clone().easing(cc.easeBackOut())
 
 			const callback = new cc.CallFunc(() => {
 				this.isCloudMoving = false
 				this.lastTimeCloudAnimated = +new Date()
-				model.data.cloud.animating = false
 			})
 			cloud.runAction(cc.sequence(moveToEasing, callback))
 		})
@@ -179,20 +338,13 @@ const LayersPlayLevel = cc.Layer.extend({
 	},
 })
 
-const layers = {
-	play: {
-		Bg: LayersPlayBg,
-		Level: LayersPlayLevel,
-	},
-}
-
 const HomeScene = cc.Scene.extend({
 	onEnter: function () {
 		this._super()
 	},
 })
 
-const PlayScene = cc.Scene.extend({
+const LevelScene = cc.Scene.extend({
 	onEnter: function () {
 		this._super()
 
@@ -203,28 +355,29 @@ const PlayScene = cc.Scene.extend({
 		this.addChild(new layers.play.Bg(), helper.zOrder.low)
 		this.addChild(new layers.play.Level(), helper.zOrder.medium)
 	},
+	setCloudPos(posX, moveDelay) {
+		model.setUser('cloudPosX', posX)
+		model.local.cloud.moveDelay = moveDelay
+
+		// mark as firstTime = false
+		model.setUser('firstTime', false)
+	},
 	addListener: function () {
 		const listener1 = cc.EventListener.create({
 			event: cc.EventListener.TOUCH_ONE_BY_ONE,
-			// When swallow touches is true, then returning 'true' from the onTouchBegan method will swallow the touch event, preventing other listeners from using it
+			// when swallow touches is true, then returning 'true' from the onTouchBegan method will swallow the touch event, preventing other listeners from using it
 			swallowTouches: true,
-			onTouchBegan: function (touch, event) {
-				model.data.cloud.posX = touch.getLocationX()
-				model.data.cloud.moveDelay = false
-				model.data.cloud.animating = true
+			onTouchBegan: (touch, event) => {
+				this.setCloudPos(touch.getLocationX(), false)
 				return true
 			},
 			// trigger when moving touch
-			onTouchMoved: function (touch, event) {
-				model.data.cloud.posX = touch.getLocationX()
-				model.data.cloud.moveDelay = true
-				model.data.cloud.animating = true
+			onTouchMoved: (touch, event) => {
+				this.setCloudPos(touch.getLocationX(), true)
 			},
 			// process the touch end event
-			onTouchEnded: function (touch, event) {
-				model.data.cloud.posX = touch.getLocationX()
-				model.data.cloud.moveDelay = false
-				model.data.cloud.animating = true
+			onTouchEnded: (touch, event) => {
+				this.setCloudPos(touch.getLocationX(), false)
 			},
 		})
 
@@ -232,11 +385,19 @@ const PlayScene = cc.Scene.extend({
 	},
 })
 
+const CollectionScene = cc.Scene.extend({
+	onEnter: function () {
+		this._super()
+	},
+})
+
 const app = {
 	startGame: () => {},
 }
 
-app.startGame = () => {
+app.startGame = async () => {
+	await model.initUser()
+
 	const onGameStart = async () => {
 		// FIX cc.loader.onProgress never called
 		cc.loader.onProgress = function (completedCount, totalCount, item) {
@@ -269,7 +430,7 @@ app.startGame = () => {
 					await FBInstant.startGameAsync()
 				}
 
-				cc.director.runScene(new PlayScene())
+				cc.director.runScene(new LevelScene())
 			},
 			this
 		)
