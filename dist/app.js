@@ -178,14 +178,40 @@ const PrefabSeed = cc.Sprite.extend({
 })
 
 const PrefabPlant = cc.Sprite.extend({
-	ctor: function () {
+	ctor: function (resourceName, animationMode = null) {
 		this._super()
-		this.initWithFile(resource.img.flower1)
-		this.setAnchorPoint(0, 0)
-		this.setScale(0.2)
-		this.setPositionX((10 / 100) * cc.director.getWinSize().width)
+
+		this.resourceName = resourceName
+		this.animationMode = animationMode
+		this.initWithFile(`assets/img/plant_${resourceName}_1.png`)
+		this.setAnchorPoint(0.5, 0)
+		this.setScale(0.35)
+
+		this.createSchedule()
 	},
-	onEnter: function () {},
+	onEnter: function () {
+		const animateEvery = 3000
+		if (this.animationMode === 'flip') {
+			setInterval(() => (this.scaleX *= -1), animateEvery)
+		} else {
+			// if animationMode is integer then it's for prefix
+			var animationCounter = 1
+			setInterval(() => {
+				animationCounter++
+
+				if (animationCounter > this.animationMode) {
+					animationCounter = 1
+				}
+				this.setTexture(`assets/img/plant_${this.resourceName}_${animationCounter}.png`)
+			}, animateEvery)
+		}
+	},
+	createSchedule() {
+		const animateEvery = 0.2
+		this.scheduleOnce(() => {
+			console.log('s')
+		})
+	},
 })
 
 const PrefabFingerPointHelper = cc.Sprite.extend({
@@ -231,6 +257,10 @@ layers.play.Bg = cc.Layer.extend({
 	printBg: function () {},
 })
 
+/*
+	TODO: put seed after 2s of rain
+*/
+
 layers.play.Level = cc.Layer.extend({
 	seeds: [], // TODO
 	plants: [], // TODO
@@ -243,10 +273,32 @@ layers.play.Level = cc.Layer.extend({
 		const raindrop = this.printRaindrop(cloud)
 		const ground = this.printGround()
 		//const flower = this.printPlants(ground)
-		//const seed = this.printSeed()
+		const seed = this.printSeed()
+		const plants = this.test()
 
 		this.scheduleCloud(cloud, raindrop)
-		this.scheduleGround(ground, []) // scheduleOnce
+		this.scheduleGround(ground, [seed, ...plants]) // scheduleOnce
+	},
+	test() {
+		const plant1 = new PrefabPlant('flower_orchid', 2)
+		plant1.setPositionX((10 / 100) * cc.director.getWinSize().width)
+		plant1.setPositionY((25 / 100) * cc.director.getWinSize().height)
+		var flip = false
+		window.plant1 = plant1
+		setInterval(() => {
+			plant1.setTexture(
+				flip ? 'assets/img/plant_flower_orchid_1.png' : 'assets/img/plant_flower_orchid_2.png'
+			)
+			flip = !flip
+		}, 3000)
+		this.addChild(plant1, helper.zOrder.medium)
+
+		const plant2 = new PrefabPlant('flower_lotus', 'flip')
+		plant2.setPositionX((30 / 100) * cc.director.getWinSize().width)
+		plant2.setPositionY((25 / 100) * cc.director.getWinSize().height)
+		this.addChild(plant2, helper.zOrder.medium)
+
+		return [plant1, plant2]
 	},
 	printHelper() {
 		if (!model.user.firstTime) return
@@ -258,7 +310,7 @@ layers.play.Level = cc.Layer.extend({
 	printCloud: function () {
 		const cloud = cc.Sprite.create(resource.img.cloud)
 		cloud.setAnchorPoint(0, 0)
-		cloud.setScale(0.2)
+		cloud.setScale(0.4)
 		cloud.setPosition(model.user.cloudPosX, (80 / 100) * cc.director.getWinSize().height)
 		this.addChild(cloud, helper.zOrder.medium)
 
@@ -266,6 +318,7 @@ layers.play.Level = cc.Layer.extend({
 	},
 	printRaindrop: function (cloud) {
 		const particleRain = cc.ParticleSystem.create(resource.particles.rain)
+		particleRain.setScale(0.6)
 		particleRain.setPosition(cloud.width / 2, (35 / 100) * cloud.height * -1)
 		particleRain.setAnchorPoint(0, 0)
 		particleRain.setDrawMode(cc.ParticleSystem.TEXTURE_MODE)
@@ -276,7 +329,7 @@ layers.play.Level = cc.Layer.extend({
 	printGround: function () {
 		const ground = new cc.Sprite(resource.img.ground)
 		ground.setAnchorPoint(0, 0)
-		ground.setPosition(0, 0)
+		ground.setPosition(-50, 0)
 		this.addChild(ground, helper.zOrder.medium)
 		return ground
 	},
@@ -286,12 +339,12 @@ layers.play.Level = cc.Layer.extend({
 		ground.addChild(plant, helper.zOrder.low)
 		return plant
 	},
+	*/
 	printSeed: function () {
 		const seed = new PrefabSeed()
 		this.addChild(seed, helper.zOrder.low)
 		return seed
 	},
-	*/
 	printLabels: function () {
 		const label = cc.LabelTTF.create('Hujan', resource.fonts.pou.name, 24)
 		label.setPosition(
@@ -332,7 +385,8 @@ layers.play.Level = cc.Layer.extend({
 	scheduleGround: function (ground, nodesOnGround) {
 		ground.scheduleOnce(() => {
 			for (let node of nodesOnGround) {
-				node.setPositionY(ground.y + ground.height)
+				const downToEarth = ground.height * 0.08
+				node.setPositionY(ground.y + ground.height - downToEarth)
 			}
 		})
 	},
