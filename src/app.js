@@ -10,19 +10,15 @@ app.startGame = async () => {
 		cc.loader.onProgress = function (completedCount, totalCount, item) {
 			const progress = (100 * completedCount) / totalCount
 			console.log('progress', progress)
-			if (helper.insideFBIframe()) {
+			if (config.mode === 'production') {
 				FBInstant.setLoadingProgress(progress)
 			}
 		}
 
 		cc.director.setDisplayStats(config.debug)
 
-		if (helper.insideFBIframe()) {
+		if (config.mode === 'production') {
 			await FBInstant.initializeAsync()
-		}
-
-		if (cc.sys.isMobile) {
-			cc.view.setOrientation(cc.macro.ORIENTATION_LANDSCAPE)
 		}
 
 		// Limit downloading max concurrent task to 2
@@ -33,7 +29,7 @@ app.startGame = async () => {
 		cc.LoaderScene.preload(
 			resource.preload.playScene,
 			async function () {
-				if (helper.insideFBIframe()) {
+				if (config.mode === 'production') {
 					await FBInstant.startGameAsync()
 				}
 
