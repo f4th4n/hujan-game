@@ -145,6 +145,7 @@ const resource = {
 		seed: 'assets/img/seed.png',
 		fingerPoint1: 'assets/img/finger_point_1.png',
 		fingerPoint2: 'assets/img/finger_point_2.png',
+		whiteSquare: 'assets/img/white_square.png',
 	},
 	fonts: {
 		pou: { type: 'font', name: 'Pou', srcs: ['dist/fonts/Pou-RMR6.ttf'] },
@@ -257,7 +258,15 @@ layers.play.Bg = cc.Layer.extend({
 		this._super()
 		this.printBg()
 	},
-	printBg: function () {},
+	printBg: function () {
+		const whiteRect = new cc.Sprite(resource.img.whiteSquare)
+		whiteRect.setColor(cc.color.WHITE)
+		whiteRect.setScaleX(cc.winSize.width / 100 + 1)
+		whiteRect.setScaleY(cc.winSize.height / 100 + 1)
+		whiteRect.setAnchorPoint(0, 0)
+		window.whiteRect = whiteRect
+		this.addChild(whiteRect, helper.zOrder.high)
+	},
 })
 
 /*

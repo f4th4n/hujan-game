@@ -31,9 +31,9 @@
 	<key>finishColorVarianceRed</key>
 	<real>0</real>
 	<key>finishParticleSize</key>
-	<real>39</real>
+	<real>45</real>
 	<key>finishParticleSizeVariance</key>
-	<real>0</real>
+	<real>100</real>
 	<key>gravityx</key>
 	<real>-20</real>
 	<key>gravityy</key>
@@ -47,7 +47,7 @@
 	<key>minRadius</key>
 	<real>0</real>
 	<key>particleLifespan</key>
-	<real>3.69</real>
+	<real>3.3</real>
 	<key>particleLifespanVariance</key>
 	<real>0</real>
 	<key>radialAccelVariance</key>
