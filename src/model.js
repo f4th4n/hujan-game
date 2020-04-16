@@ -6,14 +6,17 @@
 var model = {
 	user: {
 		firstTime: true,
-		cloudPosX: -500,
 		plantsOnGround: [],
 		plantsCollection: [],
 	},
 	local: {
 		cloud: {
-			moveDelay: false,
+			scheduleUpdatePos: {
+				x: 0,
+				on: +new Date(),
+			},
 		},
+		scheduleSeedsOn: [], // [{ x: int, on: Date }]
 	},
 	async initUser() {
 		// localStorage.removeItem('user')

@@ -106,14 +106,17 @@ const helper = {
 var model = {
 	user: {
 		firstTime: true,
-		cloudPosX: -500,
 		plantsOnGround: [],
 		plantsCollection: [],
 	},
 	local: {
 		cloud: {
-			moveDelay: false,
+			scheduleUpdatePos: {
+				x: 0,
+				on: +new Date(),
+			},
 		},
+		scheduleSeedsOn: [], // [{ x: int, on: Date }]
 	},
 	async initUser() {
 		// localStorage.removeItem('user')
@@ -321,9 +324,9 @@ layers.play.Level = cc.Layer.extend({
 	},
 	printCloud: function () {
 		const cloud = cc.Sprite.create(resource.img.cloud)
-		cloud.setAnchorPoint(0, 0)
+		cloud.setAnchorPoint(0.5, 0.5)
 		cloud.setScale(0.4)
-		cloud.setPosition(model.user.cloudPosX, (80 / 100) * cc.director.getWinSize().height)
+		cloud.setPosition(-100, (85 / 100) * cc.director.getWinSize().height)
 		this.addChild(cloud, helper.zOrder.medium)
 
 		return cloud
@@ -369,28 +372,23 @@ layers.play.Level = cc.Layer.extend({
 	},
 
 	// ---------------------------------------------------------------------------------------------- schedule
-
 	isCloudMoving: false,
 	lastTimeCloudAnimated: +new Date(),
+
 	scheduleCloud: function (cloud, raindrop) {
-		cloud.schedule(() => {
-			const delay = 100
-			if (this.isCloudMoving) return
+		cloud.schedule((lapse) => {
+			// lapse is difference of seconds since last update
+			const now = +new Date()
+			if (now < model.local.cloud.scheduleUpdatePos.on) return
 
-			const timeLapse = +new Date() - this.lastTimeCloudAnimated
-			if (timeLapse < delay && model.local.cloud.moveDelay) return // throttle for smoother animation
-
-			this.isCloudMoving = true
-			const time = Math.abs(model.user.cloudPosX - cloud.x) / 1000
+			const time = Math.abs(model.local.cloud.scheduleUpdatePos.x - cloud.x) / 1000
 			const timeClamp = time < 0.5 ? 0.5 : time // minimum animate in 500 ms
-			const moveTo = cc.moveTo(timeClamp, cc.p(model.user.cloudPosX, cloud.y))
+			const moveTo = cc.moveTo(timeClamp, cc.p(model.local.cloud.scheduleUpdatePos.x, cloud.y))
 			const moveToEasing = moveTo.clone().easing(cc.easeBackOut())
+			cloud.runAction(cc.sequence(moveToEasing))
 
-			const callback = new cc.CallFunc(() => {
-				this.isCloudMoving = false
-				this.lastTimeCloudAnimated = +new Date()
-			})
-			cloud.runAction(cc.sequence(moveToEasing, callback))
+			// make schedule stop
+			model.local.cloud.scheduleUpdatePos.on = +new Date() * 2
 		})
 	},
 
@@ -421,9 +419,11 @@ const LevelScene = cc.Scene.extend({
 		this.addChild(new layers.play.Bg(), helper.zOrder.low)
 		this.addChild(new layers.play.Level(), helper.zOrder.medium)
 	},
-	setCloudPos(posX, moveDelay) {
-		model.setUser('cloudPosX', posX)
-		model.local.cloud.moveDelay = moveDelay
+	setCloudPos(posX) {
+		model.local.cloud.scheduleUpdatePos = {
+			x: posX,
+			on: +new Date(),
+		}
 
 		// mark as firstTime = false
 		model.setUser('firstTime', false)
@@ -434,16 +434,15 @@ const LevelScene = cc.Scene.extend({
 			// when swallow touches is true, then returning 'true' from the onTouchBegan method will swallow the touch event, preventing other listeners from using it
 			swallowTouches: true,
 			onTouchBegan: (touch, event) => {
-				this.setCloudPos(touch.getLocationX(), false)
+				this.setCloudPos(touch.getLocationX(), true)
 				return true
 			},
 			// trigger when moving touch
-			onTouchMoved: (touch, event) => {
-				this.setCloudPos(touch.getLocationX(), true)
-			},
+			//onTouchMoved: (touch, event) => {
+			//},
 			// process the touch end event
 			onTouchEnded: (touch, event) => {
-				this.setCloudPos(touch.getLocationX(), false)
+				//this.setCloudPos(touch.getLocationX(), true)
 			},
 		})
 
