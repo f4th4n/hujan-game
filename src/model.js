@@ -16,7 +16,8 @@ var model = {
 		},
 		plants: [], // [cc.Node]
 	},
-	constant: {
+	once: {
+		// data that changed once
 		plantY: -1,
 	},
 	async initUser() {

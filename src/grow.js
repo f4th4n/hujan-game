@@ -5,13 +5,10 @@ class Grow {
 		this.layer = layer
 		this.modelCloudX = model.local.cloud.scheduleUpdatePos.x
 
-		const cloudHalfX = this.cloud.width / 2
 		const cloudXTolerance = (this.modelCloudX * 10) / 100 // TODO need to fine tune the tolerance
-		const cloudX1 = parseInt(this.modelCloudX - cloudHalfX + cloudXTolerance)
-		const cloudX2 = parseInt(this.modelCloudX + cloudHalfX - cloudXTolerance)
 		const cloudRangeX = {
-			start: cloudX1 < cloudX2 ? cloudX1 : cloudX2,
-			end: cloudX1 < cloudX2 ? cloudX2 : cloudX1,
+			start: this.modelCloudX - cloudXTolerance,
+			end: this.modelCloudX + cloudXTolerance,
 		}
 		if (cloudRangeX.end < 0) return false
 
@@ -27,7 +24,7 @@ class Grow {
 
 		const newPlant = new PrefabPlant('random')
 		model.local.plants.push(newPlant)
-		this.layer.addChild(newPlant, helper.zOrder.high)
+		this.layer.addChild(newPlant, helper.zOrder.low)
 	}
 }
 

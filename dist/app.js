@@ -93,7 +93,8 @@ var model = {
 		},
 		plants: [], // [cc.Node]
 	},
-	constant: {
+	once: {
+		// data that changed once
 		plantY: -1,
 	},
 	async initUser() {
@@ -157,13 +158,10 @@ class Grow {
 		this.layer = layer
 		this.modelCloudX = model.local.cloud.scheduleUpdatePos.x
 
-		const cloudHalfX = this.cloud.width / 2
 		const cloudXTolerance = (this.modelCloudX * 10) / 100 // TODO need to fine tune the tolerance
-		const cloudX1 = parseInt(this.modelCloudX - cloudHalfX + cloudXTolerance)
-		const cloudX2 = parseInt(this.modelCloudX + cloudHalfX - cloudXTolerance)
 		const cloudRangeX = {
-			start: cloudX1 < cloudX2 ? cloudX1 : cloudX2,
-			end: cloudX1 < cloudX2 ? cloudX2 : cloudX1,
+			start: this.modelCloudX - cloudXTolerance,
+			end: this.modelCloudX + cloudXTolerance,
 		}
 		if (cloudRangeX.end < 0) return false
 
@@ -179,7 +177,7 @@ class Grow {
 
 		const newPlant = new PrefabPlant('random')
 		model.local.plants.push(newPlant)
-		this.layer.addChild(newPlant, helper.zOrder.high)
+		this.layer.addChild(newPlant, helper.zOrder.low)
 	}
 }
 
@@ -203,6 +201,8 @@ const PrefabPlant = cc.Sprite.extend({
 	SEED_SCALE: 0.2,
 	SHOW_SEED_AFTER: 2, // in seconds
 	BLOOM_AFTER: 5, // in seconds
+	//SHOW_SEED_AFTER: 1, // in seconds
+	//BLOOM_AFTER: 2, // in seconds
 	mode: 'hidden-seed', // hidden-seed|seed|bloom
 
 	ctor: function (plantKeyArg) {
@@ -211,11 +211,12 @@ const PrefabPlant = cc.Sprite.extend({
 		this.rowPlant = this.getRowPlant(plantKeyArg)
 
 		this.setScale(this.SEED_SCALE)
-		this.setAnchorPoint(0.5, 0)
+		this.setAnchorPoint(0.5, 1)
 		this.setPositionX(model.local.cloud.scheduleUpdatePos.x)
-		this.setPositionY(model.constant.plantY)
+		this.setPositionY(model.once.plantY)
 		this.ageListener()
 		this.animate()
+		window.plant = this
 	},
 	getRowPlant(plantKeyArg) {
 		if (plantKeyArg === 'random') {
@@ -247,28 +248,40 @@ const PrefabPlant = cc.Sprite.extend({
 			}
 		}, animateEvery)
 	},
-	prevAge: 1,
-	prevMode: null,
+	doneSeed: false,
+	doneBloom: false,
 	ageListener: function () {
 		this.schedule(() => {
-			if (this.prevAge == this.age) return
-			if (this.prevMode == this.mode && this.mode === 'bloom') return
-
 			if (this.age < this.SHOW_SEED_AFTER) {
 				this.mode = 'hidden-seed'
 			} else if (this.age < this.BLOOM_AFTER) {
+				if (this.doneSeed) return
+
 				this.mode = 'seed'
 				this.setTexture(resource.img.seed)
+
+				// animate seed
+				const y = this.y / 4
+				const moveBy = cc.moveBy(1.0, cc.p(0, y))
+				const moveByEasing = moveBy.clone().easing(cc.easeBackOut())
+				this.runAction(cc.sequence(moveByEasing))
+
+				this.doneSeed = true
 			} else {
+				if (this.doneBloom) return
+
 				this.mode = 'bloom'
+
+				this.setPositionY(model.once.plantY)
 				this.setTexture(this.getTexture(1))
 
-				setTimeout(() => this.setTexture(this.getTexture(1)), 50)
+				setTimeout(() => this.setTexture(this.getTexture(1)), 50) // tweak
 				this.setScale(0.35)
-			}
+				this.zIndex = helper.zOrder.high + 1
+				this.setAnchorPoint(0.5, 0)
 
-			this.prevAge = this.age
-			this.prevMode = this.mode
+				this.doneBloom = true
+			}
 		}, 0.1)
 	},
 })
@@ -416,7 +429,7 @@ layers.play.Level = cc.Layer.extend({
 	scheduleGround: function (ground) {
 		ground.scheduleOnce(() => {
 			const downToEarth = ground.height * 0.08
-			model.constant.plantY = ground.y + ground.height - downToEarth
+			model.once.plantY = ground.y + ground.height - downToEarth
 		})
 	},
 })

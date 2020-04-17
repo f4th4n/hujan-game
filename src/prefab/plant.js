@@ -4,6 +4,8 @@ const PrefabPlant = cc.Sprite.extend({
 	SEED_SCALE: 0.2,
 	SHOW_SEED_AFTER: 2, // in seconds
 	BLOOM_AFTER: 5, // in seconds
+	//SHOW_SEED_AFTER: 1, // in seconds
+	//BLOOM_AFTER: 2, // in seconds
 	mode: 'hidden-seed', // hidden-seed|seed|bloom
 
 	ctor: function (plantKeyArg) {
@@ -12,11 +14,12 @@ const PrefabPlant = cc.Sprite.extend({
 		this.rowPlant = this.getRowPlant(plantKeyArg)
 
 		this.setScale(this.SEED_SCALE)
-		this.setAnchorPoint(0.5, 0)
+		this.setAnchorPoint(0.5, 1)
 		this.setPositionX(model.local.cloud.scheduleUpdatePos.x)
-		this.setPositionY(model.constant.plantY)
+		this.setPositionY(model.once.plantY)
 		this.ageListener()
 		this.animate()
+		window.plant = this
 	},
 	getRowPlant(plantKeyArg) {
 		if (plantKeyArg === 'random') {
@@ -48,28 +51,40 @@ const PrefabPlant = cc.Sprite.extend({
 			}
 		}, animateEvery)
 	},
-	prevAge: 1,
-	prevMode: null,
+	doneSeed: false,
+	doneBloom: false,
 	ageListener: function () {
 		this.schedule(() => {
-			if (this.prevAge == this.age) return
-			if (this.prevMode == this.mode && this.mode === 'bloom') return
-
 			if (this.age < this.SHOW_SEED_AFTER) {
 				this.mode = 'hidden-seed'
 			} else if (this.age < this.BLOOM_AFTER) {
+				if (this.doneSeed) return
+
 				this.mode = 'seed'
 				this.setTexture(resource.img.seed)
+
+				// animate seed
+				const y = this.y / 4
+				const moveBy = cc.moveBy(1.0, cc.p(0, y))
+				const moveByEasing = moveBy.clone().easing(cc.easeBackOut())
+				this.runAction(cc.sequence(moveByEasing))
+
+				this.doneSeed = true
 			} else {
+				if (this.doneBloom) return
+
 				this.mode = 'bloom'
+
+				this.setPositionY(model.once.plantY)
 				this.setTexture(this.getTexture(1))
 
-				setTimeout(() => this.setTexture(this.getTexture(1)), 50)
+				setTimeout(() => this.setTexture(this.getTexture(1)), 50) // tweak
 				this.setScale(0.35)
-			}
+				this.zIndex = helper.zOrder.high + 1
+				this.setAnchorPoint(0.5, 0)
 
-			this.prevAge = this.age
-			this.prevMode = this.mode
+				this.doneBloom = true
+			}
 		}, 0.1)
 	},
 })

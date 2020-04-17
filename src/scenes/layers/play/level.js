@@ -90,7 +90,7 @@ layers.play.Level = cc.Layer.extend({
 	scheduleGround: function (ground) {
 		ground.scheduleOnce(() => {
 			const downToEarth = ground.height * 0.08
-			model.constant.plantY = ground.y + ground.height - downToEarth
+			model.once.plantY = ground.y + ground.height - downToEarth
 		})
 	},
 })
