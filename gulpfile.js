@@ -10,6 +10,7 @@ const files = {
 		'src/helper.js',
 		'src/model.js',
 		'src/resource.js',
+		'src/grow.js',
 		'src/prefab/seed.js',
 		'src/prefab/plant.js',
 		'src/prefab/finger_point_helper.js',

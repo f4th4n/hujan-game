@@ -3,6 +3,7 @@
 */
 
 layers.play.Level = cc.Layer.extend({
+	isPrintRaindrop: true,
 	seeds: [], // TODO
 	plants: [], // TODO
 
@@ -13,33 +14,9 @@ layers.play.Level = cc.Layer.extend({
 		const cloud = this.printCloud()
 		const raindrop = this.printRaindrop(cloud)
 		const ground = this.printGround()
-		//const flower = this.printPlants(ground)
-		const seed = this.printSeed()
-		const plants = this.test()
 
 		this.scheduleCloud(cloud, raindrop)
-		this.scheduleGround(ground, [seed, ...plants]) // scheduleOnce
-	},
-	test() {
-		const plant1 = new PrefabPlant('flower_orchid', 2)
-		plant1.setPositionX((10 / 100) * cc.director.getWinSize().width)
-		plant1.setPositionY((25 / 100) * cc.director.getWinSize().height)
-		var flip = false
-		window.plant1 = plant1
-		setInterval(() => {
-			plant1.setTexture(
-				flip ? 'assets/img/plant_flower_orchid_1.png' : 'assets/img/plant_flower_orchid_2.png'
-			)
-			flip = !flip
-		}, 3000)
-		this.addChild(plant1, helper.zOrder.medium)
-
-		const plant2 = new PrefabPlant('flower_lotus', 'flip')
-		plant2.setPositionX((30 / 100) * cc.director.getWinSize().width)
-		plant2.setPositionY((25 / 100) * cc.director.getWinSize().height)
-		this.addChild(plant2, helper.zOrder.medium)
-
-		return [plant1, plant2]
+		this.scheduleGround(ground) // scheduleOnce, set model.constant.plantY
 	},
 	printHelper() {
 		if (!model.user.firstTime) return
@@ -58,6 +35,7 @@ layers.play.Level = cc.Layer.extend({
 		return cloud
 	},
 	printRaindrop: function (cloud) {
+		if (!this.isPrintRaindrop) return
 		const particleRain = cc.ParticleSystem.create(resource.particles.rain)
 		particleRain.setScale(0.6)
 		particleRain.setPosition(cloud.width / 2, (35 / 100) * cloud.height * -1)
@@ -74,18 +52,6 @@ layers.play.Level = cc.Layer.extend({
 		this.addChild(ground, helper.zOrder.medium)
 		return ground
 	},
-	/*
-	printPlants: function (ground) {
-		const plant = new PrefabPlant()
-		ground.addChild(plant, helper.zOrder.low)
-		return plant
-	},
-	*/
-	printSeed: function () {
-		const seed = new PrefabSeed()
-		this.addChild(seed, helper.zOrder.low)
-		return seed
-	},
 	printLabels: function () {
 		const label = cc.LabelTTF.create('Hujan', resource.fonts.pou.name, 24)
 		label.setPosition(
@@ -98,10 +64,8 @@ layers.play.Level = cc.Layer.extend({
 	},
 
 	// ---------------------------------------------------------------------------------------------- schedule
-	isCloudMoving: false,
-	lastTimeCloudAnimated: +new Date(),
-
 	scheduleCloud: function (cloud, raindrop) {
+		// schedule move cloud
 		cloud.schedule((lapse) => {
 			// lapse is difference of seconds since last update
 			const now = +new Date()
@@ -116,14 +80,17 @@ layers.play.Level = cc.Layer.extend({
 			// make schedule stop
 			model.local.cloud.scheduleUpdatePos.on = +new Date() * 2
 		})
+
+		// schedule grow seeds and plants
+		cloud.schedule(() => {
+			grow.update(cloud, this)
+		}, 1.0)
 	},
 
-	scheduleGround: function (ground, nodesOnGround) {
+	scheduleGround: function (ground) {
 		ground.scheduleOnce(() => {
-			for (let node of nodesOnGround) {
-				const downToEarth = ground.height * 0.08
-				node.setPositionY(ground.y + ground.height - downToEarth)
-			}
+			const downToEarth = ground.height * 0.08
+			model.constant.plantY = ground.y + ground.height - downToEarth
 		})
 	},
 })

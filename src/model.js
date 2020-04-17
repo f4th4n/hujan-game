@@ -1,22 +1,23 @@
 /*
-	model.user.plantsOnGround: { id: int, posX: int }
 	model.user.plantsCollection: { id: int, count: int }
 */
 
 var model = {
 	user: {
 		firstTime: true,
-		plantsOnGround: [],
 		plantsCollection: [],
 	},
 	local: {
 		cloud: {
 			scheduleUpdatePos: {
-				x: 0,
+				x: -200,
 				on: +new Date(),
 			},
 		},
-		scheduleSeedsOn: [], // [{ x: int, on: Date }]
+		plants: [], // [cc.Node]
+	},
+	constant: {
+		plantY: -1,
 	},
 	async initUser() {
 		// localStorage.removeItem('user')

@@ -39,43 +39,20 @@ const data = {
 			},
 		},
 	],
-	plants: [
-		{
-			id: 1,
-			name: 'Melati',
+	plants: {
+		lotus: {
+			id: 'lotus',
+			name: 'Lotus',
 			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
+			animationMode: 'flip',
 		},
-		{
-			id: 2,
-			name: 'Mawar',
+		orchid: {
+			id: 'orchid',
+			name: 'Orchid',
 			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
+			animationMode: 2,
 		},
-		{
-			id: 3,
-			name: 'Sepatu',
-			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
-		},
-		{
-			id: 4,
-			name: 'Bangkai',
-			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
-		},
-		{
-			id: 5,
-			name: 'Tulip',
-			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
-		},
-	],
+	},
 }
 
 const helper = {
@@ -99,24 +76,25 @@ const helper = {
 }
 
 /*
-	model.user.plantsOnGround: { id: int, posX: int }
 	model.user.plantsCollection: { id: int, count: int }
 */
 
 var model = {
 	user: {
 		firstTime: true,
-		plantsOnGround: [],
 		plantsCollection: [],
 	},
 	local: {
 		cloud: {
 			scheduleUpdatePos: {
-				x: 0,
+				x: -200,
 				on: +new Date(),
 			},
 		},
-		scheduleSeedsOn: [], // [{ x: int, on: Date }]
+		plants: [], // [cc.Node]
+	},
+	constant: {
+		plantY: -1,
 	},
 	async initUser() {
 		// localStorage.removeItem('user')
@@ -172,6 +150,41 @@ resource.preload = {
 	],
 }
 
+class Grow {
+	// @return isNewPlant
+	update(cloud, layer) {
+		this.cloud = cloud
+		this.layer = layer
+		this.modelCloudX = model.local.cloud.scheduleUpdatePos.x
+
+		const cloudHalfX = this.cloud.width / 2
+		const cloudXTolerance = (this.modelCloudX * 10) / 100 // TODO need to fine tune the tolerance
+		const cloudX1 = parseInt(this.modelCloudX - cloudHalfX + cloudXTolerance)
+		const cloudX2 = parseInt(this.modelCloudX + cloudHalfX - cloudXTolerance)
+		const cloudRangeX = {
+			start: cloudX1 < cloudX2 ? cloudX1 : cloudX2,
+			end: cloudX1 < cloudX2 ? cloudX2 : cloudX1,
+		}
+		if (cloudRangeX.end < 0) return false
+
+		var plantInRange = false
+		for (let plant of model.local.plants) {
+			if (plant.x >= cloudRangeX.start && plant.x <= cloudRangeX.end) {
+				plant.age += 1
+				plantInRange = true
+			}
+		}
+
+		if (plantInRange) return
+
+		const newPlant = new PrefabPlant('random')
+		model.local.plants.push(newPlant)
+		this.layer.addChild(newPlant, helper.zOrder.high)
+	}
+}
+
+const grow = new Grow()
+
 const PrefabSeed = cc.Sprite.extend({
 	ctor: function () {
 		this._super()
@@ -185,39 +198,78 @@ const PrefabSeed = cc.Sprite.extend({
 })
 
 const PrefabPlant = cc.Sprite.extend({
-	ctor: function (resourceName, animationMode = null) {
+	age: 1,
+
+	SEED_SCALE: 0.2,
+	SHOW_SEED_AFTER: 2, // in seconds
+	BLOOM_AFTER: 5, // in seconds
+	mode: 'hidden-seed', // hidden-seed|seed|bloom
+
+	ctor: function (plantKeyArg) {
 		this._super()
 
-		this.resourceName = resourceName
-		this.animationMode = animationMode
-		this.initWithFile(`assets/img/plant_${resourceName}_1.png`)
+		this.rowPlant = this.getRowPlant(plantKeyArg)
+
+		this.setScale(this.SEED_SCALE)
 		this.setAnchorPoint(0.5, 0)
-		this.setScale(0.35)
-
-		this.createSchedule()
+		this.setPositionX(model.local.cloud.scheduleUpdatePos.x)
+		this.setPositionY(model.constant.plantY)
+		this.ageListener()
+		this.animate()
 	},
-	onEnter: function () {
-		const animateEvery = 3000
-		if (this.animationMode === 'flip') {
-			setInterval(() => (this.scaleX *= -1), animateEvery)
+	getRowPlant(plantKeyArg) {
+		if (plantKeyArg === 'random') {
+			const keys = Object.keys(data.plants)
+			return data.plants[keys[(keys.length * Math.random()) << 0]]
 		} else {
-			// if animationMode is integer then it's for prefix
-			var animationCounter = 1
-			setInterval(() => {
-				animationCounter++
-
-				if (animationCounter > this.animationMode) {
-					animationCounter = 1
-				}
-				this.setTexture(`assets/img/plant_${this.resourceName}_${animationCounter}.png`)
-			}, animateEvery)
+			return data.plants[plantKeyArg]
 		}
 	},
-	createSchedule() {
-		const animateEvery = 0.2
-		this.scheduleOnce(() => {
-			console.log('s')
-		})
+	getTexture(animationCounter) {
+		return `assets/img/plant_${this.rowPlant.category}_${this.rowPlant.id}_${animationCounter}.png`
+	},
+	animate: function () {
+		const animateEvery = 3.0
+
+		var animationCounter = 1
+		this.schedule(() => {
+			if (this.mode !== 'bloom') return
+
+			if (this.rowPlant.animationMode === 'flip') {
+				this.scaleX *= -1
+				this.setTexture(this.getTexture(1))
+			} else {
+				animationCounter++
+				if (animationCounter > this.rowPlant.animationMode) {
+					animationCounter = 1
+				}
+				this.setTexture(this.getTexture(animationCounter))
+			}
+		}, animateEvery)
+	},
+	prevAge: 1,
+	prevMode: null,
+	ageListener: function () {
+		this.schedule(() => {
+			if (this.prevAge == this.age) return
+			if (this.prevMode == this.mode && this.mode === 'bloom') return
+
+			if (this.age < this.SHOW_SEED_AFTER) {
+				this.mode = 'hidden-seed'
+			} else if (this.age < this.BLOOM_AFTER) {
+				this.mode = 'seed'
+				this.setTexture(resource.img.seed)
+			} else {
+				this.mode = 'bloom'
+				this.setTexture(this.getTexture(1))
+
+				setTimeout(() => this.setTexture(this.getTexture(1)), 50)
+				this.setScale(0.35)
+			}
+
+			this.prevAge = this.age
+			this.prevMode = this.mode
+		}, 0.1)
 	},
 })
 
@@ -277,6 +329,7 @@ layers.play.Bg = cc.Layer.extend({
 */
 
 layers.play.Level = cc.Layer.extend({
+	isPrintRaindrop: true,
 	seeds: [], // TODO
 	plants: [], // TODO
 
@@ -287,33 +340,9 @@ layers.play.Level = cc.Layer.extend({
 		const cloud = this.printCloud()
 		const raindrop = this.printRaindrop(cloud)
 		const ground = this.printGround()
-		//const flower = this.printPlants(ground)
-		const seed = this.printSeed()
-		const plants = this.test()
 
 		this.scheduleCloud(cloud, raindrop)
-		this.scheduleGround(ground, [seed, ...plants]) // scheduleOnce
-	},
-	test() {
-		const plant1 = new PrefabPlant('flower_orchid', 2)
-		plant1.setPositionX((10 / 100) * cc.director.getWinSize().width)
-		plant1.setPositionY((25 / 100) * cc.director.getWinSize().height)
-		var flip = false
-		window.plant1 = plant1
-		setInterval(() => {
-			plant1.setTexture(
-				flip ? 'assets/img/plant_flower_orchid_1.png' : 'assets/img/plant_flower_orchid_2.png'
-			)
-			flip = !flip
-		}, 3000)
-		this.addChild(plant1, helper.zOrder.medium)
-
-		const plant2 = new PrefabPlant('flower_lotus', 'flip')
-		plant2.setPositionX((30 / 100) * cc.director.getWinSize().width)
-		plant2.setPositionY((25 / 100) * cc.director.getWinSize().height)
-		this.addChild(plant2, helper.zOrder.medium)
-
-		return [plant1, plant2]
+		this.scheduleGround(ground) // scheduleOnce, set model.constant.plantY
 	},
 	printHelper() {
 		if (!model.user.firstTime) return
@@ -332,6 +361,7 @@ layers.play.Level = cc.Layer.extend({
 		return cloud
 	},
 	printRaindrop: function (cloud) {
+		if (!this.isPrintRaindrop) return
 		const particleRain = cc.ParticleSystem.create(resource.particles.rain)
 		particleRain.setScale(0.6)
 		particleRain.setPosition(cloud.width / 2, (35 / 100) * cloud.height * -1)
@@ -348,18 +378,6 @@ layers.play.Level = cc.Layer.extend({
 		this.addChild(ground, helper.zOrder.medium)
 		return ground
 	},
-	/*
-	printPlants: function (ground) {
-		const plant = new PrefabPlant()
-		ground.addChild(plant, helper.zOrder.low)
-		return plant
-	},
-	*/
-	printSeed: function () {
-		const seed = new PrefabSeed()
-		this.addChild(seed, helper.zOrder.low)
-		return seed
-	},
 	printLabels: function () {
 		const label = cc.LabelTTF.create('Hujan', resource.fonts.pou.name, 24)
 		label.setPosition(
@@ -372,10 +390,8 @@ layers.play.Level = cc.Layer.extend({
 	},
 
 	// ---------------------------------------------------------------------------------------------- schedule
-	isCloudMoving: false,
-	lastTimeCloudAnimated: +new Date(),
-
 	scheduleCloud: function (cloud, raindrop) {
+		// schedule move cloud
 		cloud.schedule((lapse) => {
 			// lapse is difference of seconds since last update
 			const now = +new Date()
@@ -390,14 +406,17 @@ layers.play.Level = cc.Layer.extend({
 			// make schedule stop
 			model.local.cloud.scheduleUpdatePos.on = +new Date() * 2
 		})
+
+		// schedule grow seeds and plants
+		cloud.schedule(() => {
+			grow.update(cloud, this)
+		}, 1.0)
 	},
 
-	scheduleGround: function (ground, nodesOnGround) {
+	scheduleGround: function (ground) {
 		ground.scheduleOnce(() => {
-			for (let node of nodesOnGround) {
-				const downToEarth = ground.height * 0.08
-				node.setPositionY(ground.y + ground.height - downToEarth)
-			}
+			const downToEarth = ground.height * 0.08
+			model.constant.plantY = ground.y + ground.height - downToEarth
 		})
 	},
 })

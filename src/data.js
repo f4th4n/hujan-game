@@ -32,41 +32,18 @@ const data = {
 			},
 		},
 	],
-	plants: [
-		{
-			id: 1,
-			name: 'Melati',
+	plants: {
+		lotus: {
+			id: 'lotus',
+			name: 'Lotus',
 			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
+			animationMode: 'flip',
 		},
-		{
-			id: 2,
-			name: 'Mawar',
+		orchid: {
+			id: 'orchid',
+			name: 'Orchid',
 			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
+			animationMode: 2,
 		},
-		{
-			id: 3,
-			name: 'Sepatu',
-			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
-		},
-		{
-			id: 4,
-			name: 'Bangkai',
-			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
-		},
-		{
-			id: 5,
-			name: 'Tulip',
-			category: 'flower',
-			bloomInSeconds: 5,
-			funFact: '',
-		},
-	],
+	},
 }
