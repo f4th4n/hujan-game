@@ -19,7 +19,6 @@ const PrefabPlant = cc.Sprite.extend({
 		this.setPositionY(model.once.plantY)
 		this.ageListener()
 		this.animate()
-		window.plant = this
 	},
 	getRowPlant(plantKeyArg) {
 		if (plantKeyArg === 'random') {
@@ -78,7 +77,6 @@ const PrefabPlant = cc.Sprite.extend({
 				this.setPositionY(model.once.plantY)
 				this.setTexture(this.getTexture(1))
 
-				setTimeout(() => this.setTexture(this.getTexture(1)), 50) // tweak
 				this.setScale(0.35)
 				this.zIndex = helper.zOrder.high + 1
 				this.setAnchorPoint(0.5, 0)

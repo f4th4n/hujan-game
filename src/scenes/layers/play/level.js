@@ -4,11 +4,11 @@
 
 layers.play.Level = cc.Layer.extend({
 	isPrintRaindrop: true,
-	seeds: [], // TODO
-	plants: [], // TODO
 
 	ctor: function () {
 		this._super()
+
+		this.loadImages()
 		this.printLabels()
 		this.printHelper()
 		const cloud = this.printCloud()
@@ -17,6 +17,11 @@ layers.play.Level = cc.Layer.extend({
 
 		this.scheduleCloud(cloud, raindrop)
 		this.scheduleGround(ground) // scheduleOnce, set model.constant.plantY
+	},
+	loadImages() {
+		for (let imageUrl of resource.img.runtime.level1) {
+			cc.textureCache.addImageAsync(imageUrl)
+		}
 	},
 	printHelper() {
 		if (!model.user.firstTime) return

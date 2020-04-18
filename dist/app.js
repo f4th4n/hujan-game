@@ -128,6 +128,13 @@ const resource = {
 		fingerPoint1: 'assets/img/finger_point_1.png',
 		fingerPoint2: 'assets/img/finger_point_2.png',
 		whiteSquare: 'assets/img/white_square.png',
+		runtime: {
+			level1: [
+				'assets/img/plant_flower_lotus_1.png',
+				'assets/img/plant_flower_orchid_1.png',
+				'assets/img/plant_flower_orchid_2.png',
+			],
+		},
 	},
 	fonts: {
 		pou: { type: 'font', name: 'Pou', srcs: ['dist/fonts/Pou-RMR6.ttf'] },
@@ -216,7 +223,6 @@ const PrefabPlant = cc.Sprite.extend({
 		this.setPositionY(model.once.plantY)
 		this.ageListener()
 		this.animate()
-		window.plant = this
 	},
 	getRowPlant(plantKeyArg) {
 		if (plantKeyArg === 'random') {
@@ -275,7 +281,6 @@ const PrefabPlant = cc.Sprite.extend({
 				this.setPositionY(model.once.plantY)
 				this.setTexture(this.getTexture(1))
 
-				setTimeout(() => this.setTexture(this.getTexture(1)), 50) // tweak
 				this.setScale(0.35)
 				this.zIndex = helper.zOrder.high + 1
 				this.setAnchorPoint(0.5, 0)
@@ -332,7 +337,6 @@ layers.play.Bg = cc.Layer.extend({
 		whiteRect.setScaleX(cc.winSize.width / 100 + 1)
 		whiteRect.setScaleY(cc.winSize.height / 100 + 1)
 		whiteRect.setAnchorPoint(0, 0)
-		window.whiteRect = whiteRect
 		this.addChild(whiteRect, helper.zOrder.high)
 	},
 })
@@ -343,11 +347,11 @@ layers.play.Bg = cc.Layer.extend({
 
 layers.play.Level = cc.Layer.extend({
 	isPrintRaindrop: true,
-	seeds: [], // TODO
-	plants: [], // TODO
 
 	ctor: function () {
 		this._super()
+
+		this.loadImages()
 		this.printLabels()
 		this.printHelper()
 		const cloud = this.printCloud()
@@ -356,6 +360,11 @@ layers.play.Level = cc.Layer.extend({
 
 		this.scheduleCloud(cloud, raindrop)
 		this.scheduleGround(ground) // scheduleOnce, set model.constant.plantY
+	},
+	loadImages() {
+		for (let imageUrl of resource.img.runtime.level1) {
+			cc.textureCache.addImageAsync(imageUrl)
+		}
 	},
 	printHelper() {
 		if (!model.user.firstTime) return
