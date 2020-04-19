@@ -6,6 +6,7 @@ var model = {
 	user: {
 		firstTime: true,
 		plantsCollection: [],
+		level: 1,
 	},
 	local: {
 		cloud: {

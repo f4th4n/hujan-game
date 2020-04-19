@@ -83,6 +83,7 @@ var model = {
 	user: {
 		firstTime: true,
 		plantsCollection: [],
+		level: 1,
 	},
 	local: {
 		cloud: {
@@ -346,7 +347,7 @@ layers.play.Bg = cc.Layer.extend({
 */
 
 layers.play.Level = cc.Layer.extend({
-	isPrintRaindrop: true,
+	isPrintRaindrop: false,
 
 	ctor: function () {
 		this._super()

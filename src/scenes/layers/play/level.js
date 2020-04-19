@@ -3,7 +3,7 @@
 */
 
 layers.play.Level = cc.Layer.extend({
-	isPrintRaindrop: true,
+	isPrintRaindrop: false,
 
 	ctor: function () {
 		this._super()
