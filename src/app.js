@@ -23,15 +23,16 @@ app.startGame = async () => {
 		if (cc.sys.isBrowser && cc.sys.os === cc.sys.OS_ANDROID) {
 			cc.macro.DOWNLOAD_MAX_CONCURRENT = 2
 		}
+		cc.view.setDesignResolutionSize(800, 450, cc.ResolutionPolicy.FIXED_WIDTH)
 
 		cc.LoaderScene.preload(
 			resource.preload.playScene,
 			async function () {
 				if (config.mode === 'production') {
 					await FBInstant.startGameAsync()
-					await model.initUser()
 				}
 
+				await model.initUser()
 				cc.director.runScene(new LevelScene())
 			},
 			this

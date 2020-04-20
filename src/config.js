@@ -1,6 +1,6 @@
 // mode: development|production
 
 const config = {
-  mode: 'production',
+  mode: 'development',
   debug: false,
 }

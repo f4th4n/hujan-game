@@ -23,7 +23,8 @@ const files = {
 		'src/scenes/collection_scene.js',
 		'src/app.js',
 	],
-	vendor: ['assets/vendor/cocos2d-js-v3.13.js', 'assets/vendor/pubsub.min.js'],
+	vendorDev: ['assets/vendor/cocos2d-js-v3.13.js'],
+	vendorProd: ['assets/vendor/cocos2d-js-v3.13.min.js'],
 }
 
 const taskWatch = () => {
@@ -34,7 +35,8 @@ const taskWatch = () => {
 
 const build = () => {
 	// build vendor
-	gulp.src(files.vendor).pipe(concat('vendor.min.js')).pipe(gulp.dest('dist'))
+	gulp.src(files.vendorDev).pipe(concat('vendor.js')).pipe(gulp.dest('dist'))
+	gulp.src(files.vendorProd).pipe(concat('vendor.min.js')).pipe(gulp.dest('dist'))
 
 	// build app
 	const terserOpt = {

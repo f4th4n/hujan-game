@@ -51,6 +51,7 @@ layers.play.Level = cc.Layer.extend({
 		const ground = new cc.Sprite(resource.img.ground)
 		ground.setAnchorPoint(0, 0)
 		ground.setPosition(-50, 0)
+		ground.setScale(0.5)
 		this.addChild(ground, helper.zOrder.medium)
 		return ground
 	},

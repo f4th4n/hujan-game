@@ -38,7 +38,7 @@ layers.play.Sidebar = cc.Layer.extend({
       const sidebarKey = cc.LabelTTF.create(name, resource.fonts.pou.name, 16)
       sidebarKey.setPosition(
         cc.director.getWinSize().width - (8 / 100) * cc.director.getWinSize().width,
-        cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height + counter * height
+        cc.director.getWinSize().height - (10 / 100) * cc.director.getWinSize().height + counter * height
       )
       sidebarKey.setColor('black')
       sidebarKey.setAnchorPoint(1, 1)
@@ -63,7 +63,7 @@ layers.play.Sidebar = cc.Layer.extend({
       const sidebarKey = cc.LabelTTF.create(plants.length + 'X', resource.fonts.pou.name, 16)
       sidebarKey.setPosition(
         cc.director.getWinSize().width - (3 / 100) * cc.director.getWinSize().width,
-        cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height + counter * height
+        cc.director.getWinSize().height - (10 / 100) * cc.director.getWinSize().height + counter * height
       )
       sidebarKey.setColor('black')
       sidebarKey.setAnchorPoint(1, 1)
