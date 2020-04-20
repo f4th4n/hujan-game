@@ -1,5 +1,6 @@
 layers.play.Level = cc.Layer.extend({
 	CLOUD_SCALE: 0.4,
+	GROUND_SCALE: 0.5,
 
 	isPrintRaindrop: true,
 
@@ -51,7 +52,7 @@ layers.play.Level = cc.Layer.extend({
 		const ground = new cc.Sprite(resource.img.ground)
 		ground.setAnchorPoint(0, 0)
 		ground.setPosition(-50, 0)
-		ground.setScale(0.5)
+		ground.setScale(this.GROUND_SCALE)
 		this.addChild(ground, helper.zOrder.medium)
 		return ground
 	},
@@ -88,9 +89,10 @@ layers.play.Level = cc.Layer.extend({
 	},
 
 	scheduleGround: function (ground) {
+		const groundScale = this.GROUND_SCALE
 		ground.scheduleOnce(() => {
-			const downToEarth = ground.height * 0.08
-			model.once.plantY = ground.y + ground.height - downToEarth
+			window.ground = ground
+			model.once.plantY = ground.height * groundScale * 0.9
 		})
 	},
 })

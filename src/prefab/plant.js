@@ -14,7 +14,7 @@ const PrefabPlant = cc.Sprite.extend({
 		this.rowPlant = this.getRowPlant()
 
 		this.setScale(this.SEED_SCALE)
-		this.setAnchorPoint(0.5, 1)
+		this.setAnchorPoint(0.5, 0.5)
 		this.setPositionX(model.local.cloud.scheduleUpdatePos.x)
 		this.setPositionY(model.once.plantY)
 		this.ageListener()
