@@ -3,8 +3,6 @@ const app = {
 }
 
 app.startGame = async () => {
-	await model.initUser()
-
 	const onGameStart = async () => {
 		// FIX cc.loader.onProgress never called
 		cc.loader.onProgress = function (completedCount, totalCount, item) {
@@ -31,6 +29,7 @@ app.startGame = async () => {
 			async function () {
 				if (config.mode === 'production') {
 					await FBInstant.startGameAsync()
+					await model.initUser()
 				}
 
 				cc.director.runScene(new LevelScene())

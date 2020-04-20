@@ -1,7 +1,7 @@
 // mode: development|production
 
 const config = {
-  mode: 'development',
+  mode: 'production',
   debug: false,
 }
 
@@ -97,9 +97,8 @@ var model = {
 	async initUser() {
 		if (config.mode === 'production') {
 			const data = await FBInstant.player.getDataAsync(['firstTime', 'plantsCollection', 'level'])
-			console.log('data', data)
-			if (data.level) {
-				this.user = data
+			if (data.firstTime === false) {
+				this.user = { ...this.user, ...data }
 			}
 		} else {
 			// localStorage.removeItem('user')
@@ -115,7 +114,9 @@ var model = {
 		this.user[key] = value
 
 		if (config.mode === 'production') {
-			await FBInstant.player.setDataAsync({ key: value })
+			var data = {}
+			data[key] = value
+			await FBInstant.player.setDataAsync(data)
 		} else {
 			// temporary: persist on localStorage
 			localStorage.setItem('user', JSON.stringify(this.user))
@@ -130,7 +131,6 @@ var model = {
 const resource = {
 	img: {
 		bg: 'assets/img/bg.png',
-		flower1: 'assets/img/flower_1.png',
 		cloud: 'assets/img/cloud.png',
 		ground: 'assets/img/ground.png',
 		seed: 'assets/img/seed.png',
@@ -158,7 +158,6 @@ resource.preload = {
 	homeScene: [],
 	playScene: [
 		resource.img.bg,
-		resource.img.flower1,
 		resource.img.cloud,
 		resource.img.ground,
 		resource.img.seed,
@@ -437,7 +436,7 @@ layers.play.Bg = cc.Layer.extend({
 layers.play.Level = cc.Layer.extend({
 	CLOUD_SCALE: 0.4,
 
-	isPrintRaindrop: false,
+	isPrintRaindrop: true,
 
 	ctor: function () {
 		this._super()
@@ -590,8 +589,6 @@ const app = {
 }
 
 app.startGame = async () => {
-	await model.initUser()
-
 	const onGameStart = async () => {
 		// FIX cc.loader.onProgress never called
 		cc.loader.onProgress = function (completedCount, totalCount, item) {
@@ -618,6 +615,7 @@ app.startGame = async () => {
 			async function () {
 				if (config.mode === 'production') {
 					await FBInstant.startGameAsync()
+					await model.initUser()
 				}
 
 				cc.director.runScene(new LevelScene())

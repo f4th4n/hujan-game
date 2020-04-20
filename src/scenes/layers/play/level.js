@@ -1,7 +1,7 @@
 layers.play.Level = cc.Layer.extend({
 	CLOUD_SCALE: 0.4,
 
-	isPrintRaindrop: false,
+	isPrintRaindrop: true,
 
 	ctor: function () {
 		this._super()

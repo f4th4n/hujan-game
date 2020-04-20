@@ -24,9 +24,8 @@ var model = {
 	async initUser() {
 		if (config.mode === 'production') {
 			const data = await FBInstant.player.getDataAsync(['firstTime', 'plantsCollection', 'level'])
-			console.log('data', data)
-			if (data.level) {
-				this.user = data
+			if (data.firstTime === false) {
+				this.user = { ...this.user, ...data }
 			}
 		} else {
 			// localStorage.removeItem('user')
@@ -42,7 +41,9 @@ var model = {
 		this.user[key] = value
 
 		if (config.mode === 'production') {
-			await FBInstant.player.setDataAsync({ key: value })
+			var data = {}
+			data[key] = value
+			await FBInstant.player.setDataAsync(data)
 		} else {
 			// temporary: persist on localStorage
 			localStorage.setItem('user', JSON.stringify(this.user))
