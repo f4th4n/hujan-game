@@ -15,6 +15,7 @@ const files = {
 		'src/prefab/plant.js',
 		'src/prefab/finger_point_helper.js',
 		'src/scenes/layers/layers.js',
+		'src/scenes/layers/play/sidebar.js',
 		'src/scenes/layers/play/bg.js',
 		'src/scenes/layers/play/level.js',
 		'src/scenes/home_scene.js',

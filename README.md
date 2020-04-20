@@ -31,11 +31,17 @@ https://localhost:8080
 
 ### Publish
 
+#### Windows
+
 In src/config.js set mode to development
 In index.html line 18 set script src="dist/app.min.js"
 
+Zip all files, then upload to facebook
+
+#### Linux
+
 ```
-$ yarn build
+$ yarn build-project
 ```
 
-Zip all files, then upload to facebook
+Upload project-direct.zip to facebook

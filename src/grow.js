@@ -22,7 +22,7 @@ class Grow {
 
 		if (plantInRange) return
 
-		const newPlant = new PrefabPlant('random')
+		const newPlant = new PrefabPlant()
 		model.local.plants.push(newPlant)
 		this.layer.addChild(newPlant, helper.zOrder.low)
 	}

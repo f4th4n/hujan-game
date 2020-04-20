@@ -1,15 +1,12 @@
-/*
-	TODO: put seed after 2s of rain
-*/
-
 layers.play.Level = cc.Layer.extend({
+	CLOUD_SCALE: 0.4,
+
 	isPrintRaindrop: false,
 
 	ctor: function () {
 		this._super()
 
 		this.loadImages()
-		this.printLabels()
 		this.printHelper()
 		const cloud = this.printCloud()
 		const raindrop = this.printRaindrop(cloud)
@@ -33,7 +30,7 @@ layers.play.Level = cc.Layer.extend({
 	printCloud: function () {
 		const cloud = cc.Sprite.create(resource.img.cloud)
 		cloud.setAnchorPoint(0.5, 0.5)
-		cloud.setScale(0.4)
+		cloud.setScale(this.CLOUD_SCALE)
 		cloud.setPosition(-100, (85 / 100) * cc.director.getWinSize().height)
 		this.addChild(cloud, helper.zOrder.medium)
 
@@ -57,16 +54,6 @@ layers.play.Level = cc.Layer.extend({
 		this.addChild(ground, helper.zOrder.medium)
 		return ground
 	},
-	printLabels: function () {
-		const label = cc.LabelTTF.create('Hujan', resource.fonts.pou.name, 24)
-		label.setPosition(
-			(1 / 100) * cc.director.getWinSize().width,
-			cc.director.getWinSize().height - (1 / 100) * cc.director.getWinSize().height
-		)
-		label.setColor('black')
-		label.setAnchorPoint(0, 1)
-		this.addChild(label, helper.zOrder.medium)
-	},
 
 	// ---------------------------------------------------------------------------------------------- schedule
 	scheduleCloud: function (cloud, raindrop) {
@@ -75,6 +62,13 @@ layers.play.Level = cc.Layer.extend({
 			// lapse is difference of seconds since last update
 			const now = +new Date()
 			if (now < model.local.cloud.scheduleUpdatePos.on) return
+
+			// flip cloud
+			if (model.local.cloud.scheduleUpdatePos.x < cloud.x) {
+				cloud.scaleX = 1 * this.CLOUD_SCALE
+			} else {
+				cloud.scaleX = -1 * this.CLOUD_SCALE
+			}
 
 			const time = Math.abs(model.local.cloud.scheduleUpdatePos.x - cloud.x) / 1000
 			const timeClamp = time < 0.5 ? 0.5 : time // minimum animate in 500 ms

@@ -1,49 +1,45 @@
 const data = {
 	categories: ['flower', 'wood', 'fruit', 'herb', 'magical'],
-	levels: [
+	plants: [
 		{
-			index: 1,
-			dropRate: {
-				flower: 0.75,
-				wood: 0.25,
-				fruit: 0,
-				herb: 0,
-				magical: 0,
-			},
-		},
-		{
-			index: 2,
-			dropRate: {
-				flower: 0.3,
-				wood: 0.7,
-				fruit: 0,
-				herb: 0,
-				magical: 0,
-			},
-		},
-		{
-			index: 3,
-			dropRate: {
-				flower: 0.2,
-				wood: 0.2,
-				fruit: 0.6,
-				herb: 0,
-				magical: 0,
-			},
-		},
-	],
-	plants: {
-		lotus: {
 			id: 'lotus',
 			name: 'Lotus',
 			category: 'flower',
 			animationMode: 'flip',
+			level: 1,
 		},
-		orchid: {
+		{
 			id: 'orchid',
 			name: 'Orchid',
 			category: 'flower',
 			animationMode: 2,
+			level: 1,
 		},
-	},
+		{
+			id: 'ffff',
+			name: 'ffff',
+			category: 'flower',
+			animationMode: 2,
+			level: 2,
+		},
+		{
+			id: 'ggggg',
+			name: 'ggggg',
+			category: 'flower',
+			animationMode: 2,
+			level: 3,
+		},
+	],
+	levels: [
+		{
+			index: 1,
+			plantIds: ['lotus', 'orchid'],
+		},
+		{
+			index: 2,
+		},
+		{
+			index: 3,
+		},
+	],
 }

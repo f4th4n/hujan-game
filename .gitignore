@@ -2,3 +2,5 @@ node_modules
 excluded
 note.txt
 .DS_Store
+build
+project-direct.zip

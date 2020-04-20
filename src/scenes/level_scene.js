@@ -8,6 +8,7 @@ const LevelScene = cc.Scene.extend({
 	createLayers: function () {
 		this.addChild(new layers.play.Bg(), helper.zOrder.low)
 		this.addChild(new layers.play.Level(), helper.zOrder.medium)
+		this.addChild(new layers.play.Sidebar(), helper.zOrder.medium)
 	},
 	setCloudPos(posX) {
 		model.local.cloud.scheduleUpdatePos = {

@@ -1,58 +1,54 @@
 // mode: development|production
 
 const config = {
-	mode: 'development',
-	debug: false,
+  mode: 'development',
+  debug: false,
 }
 
 const data = {
 	categories: ['flower', 'wood', 'fruit', 'herb', 'magical'],
-	levels: [
+	plants: [
 		{
-			index: 1,
-			dropRate: {
-				flower: 0.75,
-				wood: 0.25,
-				fruit: 0,
-				herb: 0,
-				magical: 0,
-			},
-		},
-		{
-			index: 2,
-			dropRate: {
-				flower: 0.3,
-				wood: 0.7,
-				fruit: 0,
-				herb: 0,
-				magical: 0,
-			},
-		},
-		{
-			index: 3,
-			dropRate: {
-				flower: 0.2,
-				wood: 0.2,
-				fruit: 0.6,
-				herb: 0,
-				magical: 0,
-			},
-		},
-	],
-	plants: {
-		lotus: {
 			id: 'lotus',
 			name: 'Lotus',
 			category: 'flower',
 			animationMode: 'flip',
+			level: 1,
 		},
-		orchid: {
+		{
 			id: 'orchid',
 			name: 'Orchid',
 			category: 'flower',
 			animationMode: 2,
+			level: 1,
 		},
-	},
+		{
+			id: 'ffff',
+			name: 'ffff',
+			category: 'flower',
+			animationMode: 2,
+			level: 2,
+		},
+		{
+			id: 'ggggg',
+			name: 'ggggg',
+			category: 'flower',
+			animationMode: 2,
+			level: 3,
+		},
+	],
+	levels: [
+		{
+			index: 1,
+			plantIds: ['lotus', 'orchid'],
+		},
+		{
+			index: 2,
+		},
+		{
+			index: 3,
+		},
+	],
 }
 
 const helper = {
@@ -99,19 +95,31 @@ var model = {
 		plantY: -1,
 	},
 	async initUser() {
-		// localStorage.removeItem('user')
-		const user = localStorage.getItem('user')
-		if (user !== null) {
-			this.user = JSON.parse(user)
+		if (config.mode === 'production') {
+			const data = await FBInstant.player.getDataAsync(['firstTime', 'plantsCollection', 'level'])
+			console.log('data', data)
+			if (data.level) {
+				this.user = data
+			}
+		} else {
+			// localStorage.removeItem('user')
+			const user = localStorage.getItem('user')
+			if (user !== null) {
+				this.user = JSON.parse(user)
+			}
 		}
 	},
-	setUser(key, value) {
+	async setUser(key, value) {
 		// TODO validation
 		// TODO upload to cloud, e.g facebook
 		this.user[key] = value
 
-		// temporary: persist on localStorage
-		localStorage.setItem('user', JSON.stringify(this.user))
+		if (config.mode === 'production') {
+			await FBInstant.player.setDataAsync({ key: value })
+		} else {
+			// temporary: persist on localStorage
+			localStorage.setItem('user', JSON.stringify(this.user))
+		}
 	},
 	getUser(key) {
 		// TODO make sure data is synced with vendor
@@ -183,7 +191,7 @@ class Grow {
 
 		if (plantInRange) return
 
-		const newPlant = new PrefabPlant('random')
+		const newPlant = new PrefabPlant()
 		model.local.plants.push(newPlant)
 		this.layer.addChild(newPlant, helper.zOrder.low)
 	}
@@ -213,10 +221,10 @@ const PrefabPlant = cc.Sprite.extend({
 	//BLOOM_AFTER: 2, // in seconds
 	mode: 'hidden-seed', // hidden-seed|seed|bloom
 
-	ctor: function (plantKeyArg) {
+	ctor: function () {
 		this._super()
 
-		this.rowPlant = this.getRowPlant(plantKeyArg)
+		this.rowPlant = this.getRowPlant()
 
 		this.setScale(this.SEED_SCALE)
 		this.setAnchorPoint(0.5, 1)
@@ -225,13 +233,17 @@ const PrefabPlant = cc.Sprite.extend({
 		this.ageListener()
 		this.animate()
 	},
-	getRowPlant(plantKeyArg) {
-		if (plantKeyArg === 'random') {
-			const keys = Object.keys(data.plants)
-			return data.plants[keys[(keys.length * Math.random()) << 0]]
-		} else {
-			return data.plants[plantKeyArg]
-		}
+	getRowPlant() {
+		/*
+			This function will return random plant based on user's level.
+			Level 1 will return plant level 1,
+			Level 2 will return plant level 1, level 2
+			Level 3 will return plant level 1, level 2, level 3
+			Etc
+		*/
+		const plantsFilteredByLevel = data.plants.filter((plant) => plant.level <= model.user.level)
+		const plant = plantsFilteredByLevel[Math.floor(Math.random() * plantsFilteredByLevel.length)]
+		return plant
 	},
 	getTexture(animationCounter) {
 		return `assets/img/plant_${this.rowPlant.category}_${this.rowPlant.id}_${animationCounter}.png`
@@ -286,6 +298,9 @@ const PrefabPlant = cc.Sprite.extend({
 				this.zIndex = helper.zOrder.high + 1
 				this.setAnchorPoint(0.5, 0)
 
+				// update data
+				model.setUser('plantsCollection', [...model.user.plantsCollection, this.rowPlant.id])
+
 				this.doneBloom = true
 			}
 		}, 0.1)
@@ -321,11 +336,88 @@ const PrefabFingerPointHelper = cc.Sprite.extend({
 })
 
 const layers = {
-	play: {
-		Bg: null, // cc.Layer
-		Level: null, // cc.Layer
-	},
+  play: {
+    Bg: null, // cc.Layer
+    Level: null, // cc.Layer
+    Sidebar: null, // cc.Layer
+  },
 }
+
+layers.play.Sidebar = cc.Layer.extend({
+  ctor: function () {
+    this._super()
+
+    this.printTitle()
+
+    this.updateSidebarKeys()
+    this.schedule(() => {
+      this.updateSidebarKeys()
+    }, 1.0)
+
+    this.schedule(() => {
+      this.updateSidebarValues()
+    }, 0.1)
+  },
+  printTitle: function () {
+    const titleLabel = cc.LabelTTF.create('Hujan', resource.fonts.pou.name, 24)
+    titleLabel.setPosition(
+      (1 / 100) * cc.director.getWinSize().width,
+      cc.director.getWinSize().height - (1 / 100) * cc.director.getWinSize().height
+    )
+    titleLabel.setColor('black')
+    titleLabel.setAnchorPoint(0, 1)
+    this.addChild(titleLabel, helper.zOrder.medium)
+  },
+  sidebarKeys: [],
+  updateSidebarKeys: function () {
+    // remove old nodes, then update with new data
+    for (let oldSidebarKey of this.sidebarKeys) {
+      this.removeChild(oldSidebarKey)
+    }
+    this.sidebarKeys = []
+
+    const names = data.plants.filter((plant) => plant.level === model.user.level).map((plant) => plant.name)
+    var counter = 1
+    var height = 0
+    for (let name of names) {
+      const sidebarKey = cc.LabelTTF.create(name, resource.fonts.pou.name, 16)
+      sidebarKey.setPosition(
+        cc.director.getWinSize().width - (8 / 100) * cc.director.getWinSize().width,
+        cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height + counter * height
+      )
+      sidebarKey.setColor('black')
+      sidebarKey.setAnchorPoint(1, 1)
+      height = sidebarKey.height
+      this.addChild(sidebarKey, helper.zOrder.medium)
+      this.sidebarKeys.push(sidebarKey)
+    }
+  },
+  sidebarValues: [],
+  updateSidebarValues: function (sidebar) {
+    // remove old nodes, then update with new data
+    for (let oldSidebarKey of this.sidebarValues) {
+      this.removeChild(oldSidebarKey)
+    }
+    this.sidebarValues = []
+
+    const ids = data.plants.filter((plant) => plant.level === model.user.level).map((plant) => plant.id)
+    var counter = 1
+    var height = 0
+    for (let id of ids) {
+      const plants = model.user.plantsCollection.filter((plantId) => plantId === id)
+      const sidebarKey = cc.LabelTTF.create(plants.length + 'X', resource.fonts.pou.name, 16)
+      sidebarKey.setPosition(
+        cc.director.getWinSize().width - (3 / 100) * cc.director.getWinSize().width,
+        cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height + counter * height
+      )
+      sidebarKey.setColor('black')
+      sidebarKey.setAnchorPoint(1, 1)
+      height = sidebarKey.height
+      this.addChild(sidebarKey, helper.zOrder.medium)
+      this.sidebarValues.push(sidebarKey)
+    }
+  },
+})
 
 layers.play.Bg = cc.Layer.extend({
 	ctor: function () {
@@ -342,18 +434,15 @@ layers.play.Bg = cc.Layer.extend({
 	},
 })
 
-/*
-	TODO: put seed after 2s of rain
-*/
-
 layers.play.Level = cc.Layer.extend({
+	CLOUD_SCALE: 0.4,
+
 	isPrintRaindrop: false,
 
 	ctor: function () {
 		this._super()
 
 		this.loadImages()
-		this.printLabels()
 		this.printHelper()
 		const cloud = this.printCloud()
 		const raindrop = this.printRaindrop(cloud)
@@ -377,7 +466,7 @@ layers.play.Level = cc.Layer.extend({
 	printCloud: function () {
 		const cloud = cc.Sprite.create(resource.img.cloud)
 		cloud.setAnchorPoint(0.5, 0.5)
-		cloud.setScale(0.4)
+		cloud.setScale(this.CLOUD_SCALE)
 		cloud.setPosition(-100, (85 / 100) * cc.director.getWinSize().height)
 		this.addChild(cloud, helper.zOrder.medium)
 
@@ -401,16 +490,6 @@ layers.play.Level = cc.Layer.extend({
 		this.addChild(ground, helper.zOrder.medium)
 		return ground
 	},
-	printLabels: function () {
-		const label = cc.LabelTTF.create('Hujan', resource.fonts.pou.name, 24)
-		label.setPosition(
-			(1 / 100) * cc.director.getWinSize().width,
-			cc.director.getWinSize().height - (1 / 100) * cc.director.getWinSize().height
-		)
-		label.setColor('black')
-		label.setAnchorPoint(0, 1)
-		this.addChild(label, helper.zOrder.medium)
-	},
 
 	// ---------------------------------------------------------------------------------------------- schedule
 	scheduleCloud: function (cloud, raindrop) {
@@ -419,6 +498,13 @@ layers.play.Level = cc.Layer.extend({
 			// lapse is difference of seconds since last update
 			const now = +new Date()
 			if (now < model.local.cloud.scheduleUpdatePos.on) return
+
+			// flip cloud
+			if (model.local.cloud.scheduleUpdatePos.x < cloud.x) {
+				cloud.scaleX = 1 * this.CLOUD_SCALE
+			} else {
+				cloud.scaleX = -1 * this.CLOUD_SCALE
+			}
 
 			const time = Math.abs(model.local.cloud.scheduleUpdatePos.x - cloud.x) / 1000
 			const timeClamp = time < 0.5 ? 0.5 : time // minimum animate in 500 ms
@@ -460,6 +546,7 @@ const LevelScene = cc.Scene.extend({
 	createLayers: function () {
 		this.addChild(new layers.play.Bg(), helper.zOrder.low)
 		this.addChild(new layers.play.Level(), helper.zOrder.medium)
+		this.addChild(new layers.play.Sidebar(), helper.zOrder.medium)
 	},
 	setCloudPos(posX) {
 		model.local.cloud.scheduleUpdatePos = {

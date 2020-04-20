@@ -8,10 +8,10 @@ const PrefabPlant = cc.Sprite.extend({
 	//BLOOM_AFTER: 2, // in seconds
 	mode: 'hidden-seed', // hidden-seed|seed|bloom
 
-	ctor: function (plantKeyArg) {
+	ctor: function () {
 		this._super()
 
-		this.rowPlant = this.getRowPlant(plantKeyArg)
+		this.rowPlant = this.getRowPlant()
 
 		this.setScale(this.SEED_SCALE)
 		this.setAnchorPoint(0.5, 1)
@@ -20,13 +20,17 @@ const PrefabPlant = cc.Sprite.extend({
 		this.ageListener()
 		this.animate()
 	},
-	getRowPlant(plantKeyArg) {
-		if (plantKeyArg === 'random') {
-			const keys = Object.keys(data.plants)
-			return data.plants[keys[(keys.length * Math.random()) << 0]]
-		} else {
-			return data.plants[plantKeyArg]
-		}
+	getRowPlant() {
+		/*
+			This function will return random plant based on user's level.
+			Level 1 will return plant level 1,
+			Level 2 will return plant level 1, level 2
+			Level 3 will return plant level 1, level 2, level 3
+			Etc
+		*/
+		const plantsFilteredByLevel = data.plants.filter((plant) => plant.level <= model.user.level)
+		const plant = plantsFilteredByLevel[Math.floor(Math.random() * plantsFilteredByLevel.length)]
+		return plant
 	},
 	getTexture(animationCounter) {
 		return `assets/img/plant_${this.rowPlant.category}_${this.rowPlant.id}_${animationCounter}.png`
@@ -80,6 +84,9 @@ const PrefabPlant = cc.Sprite.extend({
 				this.setScale(0.35)
 				this.zIndex = helper.zOrder.high + 1
 				this.setAnchorPoint(0.5, 0)
+
+				// update data
+				model.setUser('plantsCollection', [...model.user.plantsCollection, this.rowPlant.id])
 
 				this.doneBloom = true
 			}

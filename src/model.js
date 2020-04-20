@@ -22,19 +22,31 @@ var model = {
 		plantY: -1,
 	},
 	async initUser() {
-		// localStorage.removeItem('user')
-		const user = localStorage.getItem('user')
-		if (user !== null) {
-			this.user = JSON.parse(user)
+		if (config.mode === 'production') {
+			const data = await FBInstant.player.getDataAsync(['firstTime', 'plantsCollection', 'level'])
+			console.log('data', data)
+			if (data.level) {
+				this.user = data
+			}
+		} else {
+			// localStorage.removeItem('user')
+			const user = localStorage.getItem('user')
+			if (user !== null) {
+				this.user = JSON.parse(user)
+			}
 		}
 	},
-	setUser(key, value) {
+	async setUser(key, value) {
 		// TODO validation
 		// TODO upload to cloud, e.g facebook
 		this.user[key] = value
 
-		// temporary: persist on localStorage
-		localStorage.setItem('user', JSON.stringify(this.user))
+		if (config.mode === 'production') {
+			await FBInstant.player.setDataAsync({ key: value })
+		} else {
+			// temporary: persist on localStorage
+			localStorage.setItem('user', JSON.stringify(this.user))
+		}
 	},
 	getUser(key) {
 		// TODO make sure data is synced with vendor
