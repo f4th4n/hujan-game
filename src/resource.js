@@ -16,6 +16,8 @@ const resource = {
 				'assets/img/plant_flower_orchid_2.png',
 				'assets/img/plant_flower_plumeria_1.png',
 				'assets/img/plant_flower_plumeria_2.png',
+				'assets/img/plant_flower_sunflower_1.png',
+				'assets/img/plant_flower_sunflower_2.png',
 			],
 		},
 	},

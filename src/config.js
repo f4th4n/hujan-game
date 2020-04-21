@@ -1,6 +1,4 @@
-// mode: development|production
-
 const config = {
-  mode: 'development',
+  insideFacebook: false,
   debug: false,
 }

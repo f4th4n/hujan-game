@@ -4,38 +4,29 @@ const app = {
 
 app.startGame = async () => {
 	const onGameStart = async () => {
-		// FIX cc.loader.onProgress never called
-		cc.loader.onProgress = function (completedCount, totalCount, item) {
-			const progress = (100 * completedCount) / totalCount
-			console.log('progress', progress)
-			if (config.mode === 'production') {
-				FBInstant.setLoadingProgress(progress)
-			}
-		}
-
 		cc.director.setDisplayStats(config.debug)
 
-		if (config.mode === 'production') {
+		if (config.inFacebook) {
 			await FBInstant.initializeAsync()
 		}
 
-		// Limit downloading max concurrent task to 2
-		if (cc.sys.isBrowser && cc.sys.os === cc.sys.OS_ANDROID) {
-			cc.macro.DOWNLOAD_MAX_CONCURRENT = 2
-		}
 		cc.view.setDesignResolutionSize(800, 450, cc.ResolutionPolicy.FIXED_WIDTH)
 
-		cc.LoaderScene.preload(
+		cc.loader.load(
 			resource.preload.playScene,
+			function (result, count, loadedCount) {
+				var percent = ((loadedCount / count) * 100) | 0
+				percent = Math.min(percent, 100)
+				FBInstant.setLoadingProgress(percent)
+			},
 			async function () {
-				if (config.mode === 'production') {
+				if (config.insideFacebook) {
 					await FBInstant.startGameAsync()
 				}
 
 				await model.initUser()
 				cc.director.runScene(new LevelScene())
-			},
-			this
+			}
 		)
 	}
 

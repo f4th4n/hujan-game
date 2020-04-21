@@ -4,3 +4,5 @@ note.txt
 .DS_Store
 build
 project-direct.zip
+dist/app.js
+dist/app.min.js
