@@ -1,4 +1,6 @@
 layers.play.Sidebar = cc.Layer.extend({
+  RIGHT_SIDEBAR_OPACITY: 200,
+
   ctor: function () {
     this._super()
 
@@ -32,19 +34,22 @@ layers.play.Sidebar = cc.Layer.extend({
     this.sidebarKeys = []
 
     const names = data.plants.filter((plant) => plant.level === model.user.level).map((plant) => plant.name)
-    var counter = 1
+    var counter = 0
     var height = 0
     for (let name of names) {
       const sidebarKey = cc.LabelTTF.create(name, resource.fonts.pou.name, 16)
+      const sortHeight = counter * height
       sidebarKey.setPosition(
         cc.director.getWinSize().width - (8 / 100) * cc.director.getWinSize().width,
-        cc.director.getWinSize().height - (10 / 100) * cc.director.getWinSize().height + counter * height
+        cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height - sortHeight
       )
+      sidebarKey.opacity = this.RIGHT_SIDEBAR_OPACITY
       sidebarKey.setColor('black')
       sidebarKey.setAnchorPoint(1, 1)
       height = sidebarKey.height
       this.addChild(sidebarKey, helper.zOrder.medium)
       this.sidebarKeys.push(sidebarKey)
+      counter++
     }
   },
   sidebarValues: [],
@@ -56,20 +61,24 @@ layers.play.Sidebar = cc.Layer.extend({
     this.sidebarValues = []
 
     const ids = data.plants.filter((plant) => plant.level === model.user.level).map((plant) => plant.id)
-    var counter = 1
+    var counter = 0
     var height = 0
     for (let id of ids) {
       const plants = model.user.plantsCollection.filter((plantId) => plantId === id)
-      const sidebarKey = cc.LabelTTF.create(plants.length + 'X', resource.fonts.pou.name, 16)
-      sidebarKey.setPosition(
+      const sidebarValue = cc.LabelTTF.create(plants.length + 'X', resource.fonts.pou.name, 16)
+      window.sidebarValue = sidebarValue
+      const sortHeight = counter * height
+      sidebarValue.setPosition(
         cc.director.getWinSize().width - (3 / 100) * cc.director.getWinSize().width,
-        cc.director.getWinSize().height - (10 / 100) * cc.director.getWinSize().height + counter * height
+        cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height - sortHeight
       )
-      sidebarKey.setColor('black')
-      sidebarKey.setAnchorPoint(1, 1)
-      height = sidebarKey.height
-      this.addChild(sidebarKey, helper.zOrder.medium)
-      this.sidebarValues.push(sidebarKey)
+      sidebarValue.opacity = this.RIGHT_SIDEBAR_OPACITY
+      sidebarValue.setColor('black')
+      sidebarValue.setAnchorPoint(1, 1)
+      height = sidebarValue.height
+      this.addChild(sidebarValue, helper.zOrder.medium)
+      this.sidebarValues.push(sidebarValue)
+      counter++
     }
   },
 })

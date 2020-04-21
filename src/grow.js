@@ -1,5 +1,4 @@
 class Grow {
-	// @return isNewPlant
 	update(cloud, layer) {
 		this.cloud = cloud
 		this.layer = layer
@@ -10,7 +9,7 @@ class Grow {
 			start: this.modelCloudX - cloudXTolerance,
 			end: this.modelCloudX + cloudXTolerance,
 		}
-		if (cloudRangeX.end < 0) return false
+		if (cloudRangeX.end < 0) return
 
 		var plantInRange = false
 		for (let plant of model.local.plants) {

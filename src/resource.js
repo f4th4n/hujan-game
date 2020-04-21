@@ -9,9 +9,13 @@ const resource = {
 		whiteSquare: 'assets/img/white_square.png',
 		runtime: {
 			level1: [
+				'assets/img/plant_flower_lily_1.png',
+				'assets/img/plant_flower_lily_2.png',
 				'assets/img/plant_flower_lotus_1.png',
 				'assets/img/plant_flower_orchid_1.png',
 				'assets/img/plant_flower_orchid_2.png',
+				'assets/img/plant_flower_plumeria_1.png',
+				'assets/img/plant_flower_plumeria_2.png',
 			],
 		},
 	},

@@ -1,11 +1,10 @@
 const PrefabPlant = cc.Sprite.extend({
-	age: 1,
-
 	SEED_SCALE: 0.2,
 	SHOW_SEED_AFTER: 2, // in seconds
 	BLOOM_AFTER: 5, // in seconds
-	//SHOW_SEED_AFTER: 1, // in seconds
-	//BLOOM_AFTER: 2, // in seconds
+	DESTROY_AFTER: 20,
+
+	age: 1,
 	mode: 'hidden-seed', // hidden-seed|seed|bloom
 
 	ctor: function () {
@@ -19,6 +18,7 @@ const PrefabPlant = cc.Sprite.extend({
 		this.setPositionY(model.once.plantY)
 		this.ageListener()
 		this.animate()
+		window.plant = this
 	},
 	getRowPlant() {
 		/*
@@ -73,7 +73,7 @@ const PrefabPlant = cc.Sprite.extend({
 				this.runAction(cc.sequence(moveByEasing))
 
 				this.doneSeed = true
-			} else {
+			} else if (this.age < this.DESTROY_AFTER) {
 				if (this.doneBloom) return
 
 				this.mode = 'bloom'
@@ -89,6 +89,8 @@ const PrefabPlant = cc.Sprite.extend({
 				model.setUser('plantsCollection', [...model.user.plantsCollection, this.rowPlant.id])
 
 				this.doneBloom = true
+			} else {
+				this.removeFromParent()
 			}
 		}, 0.1)
 	},

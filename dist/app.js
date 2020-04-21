@@ -23,6 +23,27 @@ const data = {
 			level: 1,
 		},
 		{
+			id: 'lily',
+			name: 'Lily',
+			category: 'flower',
+			animationMode: 2,
+			level: 1,
+		},
+		{
+			id: 'plumeria',
+			name: 'Plumeria',
+			category: 'flower',
+			animationMode: 2,
+			level: 1,
+		},
+		{
+			id: 'sunflower',
+			name: 'Sunflower',
+			category: 'flower',
+			animationMode: 2,
+			level: 1,
+		},
+		{
 			id: 'ffff',
 			name: 'ffff',
 			category: 'flower',
@@ -40,7 +61,7 @@ const data = {
 	levels: [
 		{
 			index: 1,
-			plantIds: ['lotus', 'orchid'],
+			plantIds: ['lotus', 'orchid', 'lily', 'plumeria', 'sunflower'],
 		},
 		{
 			index: 2,
@@ -139,9 +160,13 @@ const resource = {
 		whiteSquare: 'assets/img/white_square.png',
 		runtime: {
 			level1: [
+				'assets/img/plant_flower_lily_1.png',
+				'assets/img/plant_flower_lily_2.png',
 				'assets/img/plant_flower_lotus_1.png',
 				'assets/img/plant_flower_orchid_1.png',
 				'assets/img/plant_flower_orchid_2.png',
+				'assets/img/plant_flower_plumeria_1.png',
+				'assets/img/plant_flower_plumeria_2.png',
 			],
 		},
 	},
@@ -167,7 +192,6 @@ resource.preload = {
 }
 
 class Grow {
-	// @return isNewPlant
 	update(cloud, layer) {
 		this.cloud = cloud
 		this.layer = layer
@@ -178,7 +202,7 @@ class Grow {
 			start: this.modelCloudX - cloudXTolerance,
 			end: this.modelCloudX + cloudXTolerance,
 		}
-		if (cloudRangeX.end < 0) return false
+		if (cloudRangeX.end < 0) return
 
 		var plantInRange = false
 		for (let plant of model.local.plants) {
@@ -211,13 +235,12 @@ const PrefabSeed = cc.Sprite.extend({
 })
 
 const PrefabPlant = cc.Sprite.extend({
-	age: 1,
-
 	SEED_SCALE: 0.2,
 	SHOW_SEED_AFTER: 2, // in seconds
 	BLOOM_AFTER: 5, // in seconds
-	//SHOW_SEED_AFTER: 1, // in seconds
-	//BLOOM_AFTER: 2, // in seconds
+	DESTROY_AFTER: 20,
+
+	age: 1,
 	mode: 'hidden-seed', // hidden-seed|seed|bloom
 
 	ctor: function () {
@@ -231,6 +254,7 @@ const PrefabPlant = cc.Sprite.extend({
 		this.setPositionY(model.once.plantY)
 		this.ageListener()
 		this.animate()
+		window.plant = this
 	},
 	getRowPlant() {
 		/*
@@ -285,7 +309,7 @@ const PrefabPlant = cc.Sprite.extend({
 				this.runAction(cc.sequence(moveByEasing))
 
 				this.doneSeed = true
-			} else {
+			} else if (this.age < this.DESTROY_AFTER) {
 				if (this.doneBloom) return
 
 				this.mode = 'bloom'
@@ -301,6 +325,8 @@ const PrefabPlant = cc.Sprite.extend({
 				model.setUser('plantsCollection', [...model.user.plantsCollection, this.rowPlant.id])
 
 				this.doneBloom = true
+			} else {
+				this.removeFromParent()
 			}
 		}, 0.1)
 	},
@@ -343,6 +369,8 @@ const layers = {
 }
 
 layers.play.Sidebar = cc.Layer.extend({
+  RIGHT_SIDEBAR_OPACITY: 200,
+
   ctor: function () {
     this._super()
 
@@ -376,19 +404,22 @@ layers.play.Sidebar = cc.Layer.extend({
     this.sidebarKeys = []
 
     const names = data.plants.filter((plant) => plant.level === model.user.level).map((plant) => plant.name)
-    var counter = 1
+    var counter = 0
     var height = 0
     for (let name of names) {
       const sidebarKey = cc.LabelTTF.create(name, resource.fonts.pou.name, 16)
+      const sortHeight = counter * height
       sidebarKey.setPosition(
         cc.director.getWinSize().width - (8 / 100) * cc.director.getWinSize().width,
-        cc.director.getWinSize().height - (10 / 100) * cc.director.getWinSize().height + counter * height
+        cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height - sortHeight
       )
+      sidebarKey.opacity = this.RIGHT_SIDEBAR_OPACITY
       sidebarKey.setColor('black')
       sidebarKey.setAnchorPoint(1, 1)
       height = sidebarKey.height
       this.addChild(sidebarKey, helper.zOrder.medium)
       this.sidebarKeys.push(sidebarKey)
+      counter++
     }
   },
   sidebarValues: [],
@@ -400,20 +431,24 @@ layers.play.Sidebar = cc.Layer.extend({
     this.sidebarValues = []
 
     const ids = data.plants.filter((plant) => plant.level === model.user.level).map((plant) => plant.id)
-    var counter = 1
+    var counter = 0
     var height = 0
     for (let id of ids) {
       const plants = model.user.plantsCollection.filter((plantId) => plantId === id)
-      const sidebarKey = cc.LabelTTF.create(plants.length + 'X', resource.fonts.pou.name, 16)
-      sidebarKey.setPosition(
+      const sidebarValue = cc.LabelTTF.create(plants.length + 'X', resource.fonts.pou.name, 16)
+      window.sidebarValue = sidebarValue
+      const sortHeight = counter * height
+      sidebarValue.setPosition(
         cc.director.getWinSize().width - (3 / 100) * cc.director.getWinSize().width,
-        cc.director.getWinSize().height - (10 / 100) * cc.director.getWinSize().height + counter * height
+        cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height - sortHeight
       )
-      sidebarKey.setColor('black')
-      sidebarKey.setAnchorPoint(1, 1)
-      height = sidebarKey.height
-      this.addChild(sidebarKey, helper.zOrder.medium)
-      this.sidebarValues.push(sidebarKey)
+      sidebarValue.opacity = this.RIGHT_SIDEBAR_OPACITY
+      sidebarValue.setColor('black')
+      sidebarValue.setAnchorPoint(1, 1)
+      height = sidebarValue.height
+      this.addChild(sidebarValue, helper.zOrder.medium)
+      this.sidebarValues.push(sidebarValue)
+      counter++
     }
   },
 })
