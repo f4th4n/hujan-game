@@ -7,6 +7,7 @@ const resource = {
 		fingerPoint1: 'assets/img/finger_point_1.png',
 		fingerPoint2: 'assets/img/finger_point_2.png',
 		whiteSquare: 'assets/img/white_square.png',
+		newspaper: 'assets/img/newspaper.png',
 		runtime: {
 			level1: [
 				'assets/img/plant_flower_lily_1.png',
@@ -37,6 +38,7 @@ resource.preload = {
 		resource.img.cloud,
 		resource.img.ground,
 		resource.img.seed,
+		resource.img.newspaper,
 		resource.fonts.pou,
 		resource.particles.rain,
 	],

@@ -16,6 +16,7 @@ var model = {
 			},
 		},
 		plants: [], // [cc.Node]
+		plantsCountCurrentSession: 0,
 	},
 	once: {
 		// data that changed once

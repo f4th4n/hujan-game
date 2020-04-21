@@ -1,3 +1,8 @@
+/*
+	for every level, assumed one level has 5 plants species and player need to have 5 same plant for every species
+	then player need draw ~40 times. If per draw need 10 seconds then player need 6.66 minutes to complete a level.
+*/
+
 const data = {
 	categories: ['flower', 'wood', 'fruit', 'herb', 'magical'],
 	plants: [

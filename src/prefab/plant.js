@@ -6,6 +6,7 @@ const PrefabPlant = cc.Sprite.extend({
 
 	age: 1,
 	mode: 'hidden-seed', // hidden-seed|seed|bloom
+	isAd: false,
 
 	ctor: function () {
 		this._super()
@@ -21,6 +22,14 @@ const PrefabPlant = cc.Sprite.extend({
 		window.plant = this
 	},
 	getRowPlant() {
+		if (
+			model.local.plantsCountCurrentSession % config.ad.showEveryPlant === 0 &&
+			model.local.plantsCountCurrentSession !== 0
+		) {
+			this.isAd = true
+			return { id: 'ad', name: 'Ad', category: 'etc' }
+		}
+
 		/*
 			This function will return random plant based on user's level.
 			Level 1 will return plant level 1,
@@ -36,6 +45,8 @@ const PrefabPlant = cc.Sprite.extend({
 		return `assets/img/plant_${this.rowPlant.category}_${this.rowPlant.id}_${animationCounter}.png`
 	},
 	animate: function () {
+		if (this.isAd) return
+
 		const animateEvery = 3.0
 
 		var animationCounter = 1
@@ -78,20 +89,43 @@ const PrefabPlant = cc.Sprite.extend({
 
 				this.mode = 'bloom'
 
-				this.setPositionY(model.once.plantY)
-				this.setTexture(this.getTexture(1))
+				if (this.isAd) {
+					this.setTexture(resource.img.newspaper)
+					this.setScale(0.3)
+					this.showAndRequestAd()
+				} else {
+					this.setPositionY(model.once.plantY)
+					this.setTexture(this.getTexture(1))
+					this.setScale(0.35)
+					// update data
+					model.setUser('plantsCollection', [...model.user.plantsCollection, this.rowPlant.id])
+					model.local.plantsCountCurrentSession++
+				}
 
-				this.setScale(0.35)
 				this.zIndex = helper.zOrder.high + 1
 				this.setAnchorPoint(0.5, 0)
-
-				// update data
-				model.setUser('plantsCollection', [...model.user.plantsCollection, this.rowPlant.id])
 
 				this.doneBloom = true
 			} else {
 				this.removeFromParent()
 			}
 		}, 0.1)
+	},
+	showAndRequestAd() {
+		setTimeout(() => {
+			this.removeFromParent()
+
+			if (!app.preloadedInterstitial) return
+
+			app.preloadedInterstitial
+				.showAsync()
+				.then(function () {
+					console.log('Interstitial ad finished successfully')
+					app.requestAd()
+				})
+				.catch(function (e) {
+					console.error(e.message)
+				})
+		}, 1500)
 	},
 })

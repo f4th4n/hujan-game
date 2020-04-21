@@ -1,7 +1,23 @@
 const app = {
 	insideFacebook: null,
+	preloadedInterstitial: null,
 	setup: () => {},
 	startGame: () => {},
+	requestAd: () => {},
+}
+
+app.requestAd = () => {
+	FBInstant.getInterstitialAdAsync(config.ad.adPlacementId)
+		.then(function (interstitial) {
+			app.preloadedInterstitial = interstitial
+			return app.preloadedInterstitial.loadAsync()
+		})
+		.then(function () {
+			console.log('Interstitial preloaded')
+		})
+		.catch(function (err) {
+			console.error('Interstitial failed to preload: ' + err.message)
+		})
 }
 
 app.setup = () => {
@@ -19,6 +35,11 @@ app.setup = () => {
 }
 
 app.startGame = async () => {
+	const supportAd = FBInstant.getSupportedAPIs().includes('getInterstitialAdAsync')
+	if (config.ad.showAd && app.insideFacebook && supportAd) {
+		app.requestAd()
+	}
+
 	const onGameStart = async () => {
 		if (app.insideFacebook) {
 			await FBInstant.initializeAsync()
