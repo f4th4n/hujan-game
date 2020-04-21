@@ -62,8 +62,5 @@ const data = {
 		{
 			index: 3,
 		},
-		{
-			index: 4,
-		},
 	],
 }

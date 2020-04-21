@@ -10,8 +10,8 @@ $ openssl req -x509 -days 1000 -new -key key.pem -out cert.pem
 
 ### Development
 
-In src/config.js set mode to development
-In index.html line 18 set script src="dist/app.js"
+In index.html line 22 set script src="dist/app.js"
+In index.html line 23 set script src="dist/vendor.js"
 
 ```
 terminal 1
@@ -33,8 +33,12 @@ https://localhost:8080
 
 #### Windows
 
-In src/config.js set mode to development
-In index.html line 18 set script src="dist/app.min.js"
+In index.html line 22 set script src="dist/app.min.js"
+In index.html line 23 set script src="dist/vendor.min.js"
+
+```
+npm run build-js
+```
 
 Zip all files, then upload to facebook
 
