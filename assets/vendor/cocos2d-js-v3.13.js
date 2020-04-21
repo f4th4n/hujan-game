@@ -11296,6 +11296,7 @@ cc.Director = cc.Class.extend({
         return cc.profiler ? cc.profiler.isShowingStats() : false;
     },
     setDisplayStats: function (displayStats) {
+        return
         if (cc.profiler) {
             displayStats ? cc.profiler.showStats() : cc.profiler.hideStats();
         }

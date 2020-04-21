@@ -6,3 +6,5 @@ build
 project-direct.zip
 dist/app.js
 dist/app.min.js
+dist/vendor.js
+dist/vendor.min.js

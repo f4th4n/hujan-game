@@ -1,12 +1,26 @@
 const app = {
+	insideFacebook: null,
+	setup: () => {},
 	startGame: () => {},
+}
+
+app.setup = () => {
+	const inIframe = () => {
+		try {
+			return window.self !== window.top
+		} catch (e) {
+			return true
+		}
+	}
+
+	const locals = ['127.0.0.1:8080', 'localhost:8080', '0.0.0.0:8080']
+	const inLocal = locals.includes(window.location.host)
+	app.insideFacebook = inIframe() || !inLocal
 }
 
 app.startGame = async () => {
 	const onGameStart = async () => {
-		cc.director.setDisplayStats(config.debug)
-
-		if (config.inFacebook) {
+		if (app.insideFacebook) {
 			await FBInstant.initializeAsync()
 		}
 
@@ -20,7 +34,7 @@ app.startGame = async () => {
 				FBInstant.setLoadingProgress(percent)
 			},
 			async function () {
-				if (config.insideFacebook) {
+				if (app.insideFacebook) {
 					await FBInstant.startGameAsync()
 				}
 
@@ -33,4 +47,5 @@ app.startGame = async () => {
 	cc.game.run('gameCanvas', onGameStart)
 }
 
+app.setup()
 window.onload = app.startGame

@@ -22,7 +22,7 @@ var model = {
 		plantY: -1,
 	},
 	async initUser() {
-		if (config.insideFacebook) {
+		if (app.insideFacebook) {
 			const data = await FBInstant.player.getDataAsync(['firstTime', 'plantsCollection', 'level'])
 			if (data.firstTime === false) {
 				this.user = { ...this.user, ...data }
@@ -40,7 +40,7 @@ var model = {
 		// TODO upload to cloud, e.g facebook
 		this.user[key] = value
 
-		if (config.insideFacebook) {
+		if (app.insideFacebook) {
 			var data = {}
 			data[key] = value
 			await FBInstant.player.setDataAsync(data)
