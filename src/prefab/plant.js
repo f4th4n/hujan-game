@@ -1,6 +1,6 @@
 const PrefabPlant = cc.Sprite.extend({
 	SEED_SCALE: 0.2,
-	PLANT_SCALE: 0.4,
+	PLANT_SCALE: 0.5,
 	SHOW_SEED_AFTER: 2, // in seconds
 	BLOOM_AFTER: 5, // in seconds
 	ANIMATE_EVERY: 3.0, // in seconds
