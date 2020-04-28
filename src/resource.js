@@ -28,6 +28,14 @@ const resource = {
 	particles: {
 		rain: 'assets/particle_rain.plist',
 	},
+	shaders: {
+		stripes: {
+			vertex: 'assets/shaders/stripes.vsh',
+			fragment: 'assets/shaders/stripes.fsh',
+		},
+	},
+
+	// will be filled later
 	preload: {},
 }
 
@@ -41,5 +49,7 @@ resource.preload = {
 		resource.img.newspaper,
 		resource.fonts.pou,
 		resource.particles.rain,
+		resource.shaders.stripes.vertex,
+		resource.shaders.stripes.fragment,
 	],
 }

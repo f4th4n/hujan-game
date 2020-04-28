@@ -66,7 +66,6 @@ layers.play.Sidebar = cc.Layer.extend({
     for (let id of ids) {
       const plants = model.user.plantsCollection.filter((plantId) => plantId === id)
       const sidebarValue = cc.LabelTTF.create(plants.length + 'X', resource.fonts.pou.name, 16)
-      window.sidebarValue = sidebarValue
       const sortHeight = counter * height
       sidebarValue.setPosition(
         cc.director.getWinSize().width - (3 / 100) * cc.director.getWinSize().width,

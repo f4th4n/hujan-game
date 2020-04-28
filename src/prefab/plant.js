@@ -21,7 +21,6 @@ const PrefabPlant = cc.Sprite.extend({
 		this.setPositionY(model.once.plantY)
 		this.ageListener()
 		this.animate()
-		window.plant = this
 	},
 	getRowPlant() {
 		if (

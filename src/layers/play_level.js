@@ -1,5 +1,4 @@
 layers.play.Level = cc.Layer.extend({
-	CLOUD_SCALE: 0.4,
 	GROUND_SCALE: 0.5,
 
 	isPrintRaindrop: true,
@@ -29,10 +28,7 @@ layers.play.Level = cc.Layer.extend({
 		return fingerPointHelper
 	},
 	printCloud: function () {
-		const cloud = cc.Sprite.create(resource.img.cloud)
-		cloud.setAnchorPoint(0.5, 0.5)
-		cloud.setScale(this.CLOUD_SCALE)
-		cloud.setPosition(-100, (85 / 100) * cc.director.getWinSize().height)
+		const cloud = new CloudPrefab()
 		this.addChild(cloud, helper.zOrder.medium)
 
 		return cloud
@@ -59,6 +55,7 @@ layers.play.Level = cc.Layer.extend({
 
 	// ---------------------------------------------------------------------------------------------- schedule
 	scheduleCloud: function (cloud, raindrop) {
+		// TODO move cloud.schedule(fn) to cloud.js
 		// schedule move cloud
 		cloud.schedule((lapse) => {
 			// lapse is difference of seconds since last update
@@ -67,9 +64,9 @@ layers.play.Level = cc.Layer.extend({
 
 			// flip cloud
 			if (model.local.cloud.scheduleUpdatePos.x < cloud.x) {
-				cloud.scaleX = 1 * this.CLOUD_SCALE
+				cloud.scaleX = 1 * cloud.CLOUD_SCALE
 			} else {
-				cloud.scaleX = -1 * this.CLOUD_SCALE
+				cloud.scaleX = -1 * cloud.CLOUD_SCALE
 			}
 
 			const time = Math.abs(model.local.cloud.scheduleUpdatePos.x - cloud.x) / 1000
@@ -91,7 +88,6 @@ layers.play.Level = cc.Layer.extend({
 	scheduleGround: function (ground) {
 		const groundScale = this.GROUND_SCALE
 		ground.scheduleOnce(() => {
-			window.ground = ground
 			model.once.plantY = ground.height * groundScale * 0.9
 		})
 	},
