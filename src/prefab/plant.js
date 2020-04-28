@@ -1,7 +1,9 @@
 const PrefabPlant = cc.Sprite.extend({
 	SEED_SCALE: 0.2,
+	PLANT_SCALE: 0.4,
 	SHOW_SEED_AFTER: 2, // in seconds
 	BLOOM_AFTER: 5, // in seconds
+	ANIMATE_EVERY: 3.0, // in seconds
 	DESTROY_AFTER: 20,
 
 	age: 1,
@@ -47,8 +49,6 @@ const PrefabPlant = cc.Sprite.extend({
 	animate: function () {
 		if (this.isAd) return
 
-		const animateEvery = 3.0
-
 		var animationCounter = 1
 		this.schedule(() => {
 			if (this.mode !== 'bloom') return
@@ -63,7 +63,7 @@ const PrefabPlant = cc.Sprite.extend({
 				}
 				this.setTexture(this.getTexture(animationCounter))
 			}
-		}, animateEvery)
+		}, this.ANIMATE_EVERY)
 	},
 	doneSeed: false,
 	doneBloom: false,
@@ -96,7 +96,7 @@ const PrefabPlant = cc.Sprite.extend({
 				} else {
 					this.setPositionY(model.once.plantY)
 					this.setTexture(this.getTexture(1))
-					this.setScale(0.35)
+					this.setScale(this.PLANT_SCALE)
 					// update data
 					model.setUser('plantsCollection', [...model.user.plantsCollection, this.rowPlant.id])
 					model.local.plantsCountCurrentSession++
