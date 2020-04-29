@@ -6,9 +6,12 @@ const LevelScene = cc.Scene.extend({
 		this.addListener()
 	},
 	createLayers: function () {
-		this.addChild(new layers.play.Bg(), helper.zOrder.low)
-		this.addChild(new layers.play.Level(), helper.zOrder.medium)
-		this.addChild(new layers.play.Sidebar(), helper.zOrder.medium)
+		model.layers.level.bg = new layers.play.Bg()
+		model.layers.level.level = new layers.play.Level()
+		model.layers.level.sidebar = new layers.play.Sidebar()
+		this.addChild(model.layers.level.bg, helper.zOrder.low)
+		this.addChild(model.layers.level.level, helper.zOrder.medium)
+		this.addChild(model.layers.level.sidebar, helper.zOrder.medium)
 	},
 	setCloudPos(posX) {
 		model.local.cloud.scheduleUpdatePos = {

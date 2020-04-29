@@ -12,6 +12,7 @@ const data = {
 			category: 'flower',
 			animationMode: 'flip',
 			level: 1,
+			anchorY: 0.06,
 		},
 		{
 			id: 'orchid',

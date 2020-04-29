@@ -10,10 +10,15 @@ const PrefabPlant = cc.Sprite.extend({
 	mode: 'hidden-seed', // hidden-seed|seed|bloom
 	isAd: false,
 
-	ctor: function () {
+	ctor: function (argRowPlant = null) {
 		this._super()
 
-		this.rowPlant = this.getRowPlant()
+		if (argRowPlant === null) {
+			this.rowPlant = this.getRowPlant()
+		} else {
+			this.rowPlant = argRowPlant
+			this.age = 5
+		}
 
 		this.setScale(this.SEED_SCALE)
 		this.setAnchorPoint(0.5, 0.5)
@@ -102,7 +107,7 @@ const PrefabPlant = cc.Sprite.extend({
 				}
 
 				this.zIndex = helper.zOrder.high + 1
-				this.setAnchorPoint(0.5, 0)
+				this.setAnchorPoint(0.5, this.rowPlant.anchorY || 0)
 
 				this.doneBloom = true
 			} else {

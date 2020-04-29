@@ -1,7 +1,7 @@
 const helper = {
 	virtual: {
-		width: 480,
-		height: 270,
+		width: 800, // always equal to cc.winSize.width
+		height: 450, // not always equal to cc.winSize.height, sometimes cc.winSize.height = 369
 	},
 	zOrder: {
 		zero: 0,

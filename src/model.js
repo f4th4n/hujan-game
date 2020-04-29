@@ -1,7 +1,3 @@
-/*
-	model.user.plantsCollection: { id: int, count: int }
-*/
-
 var model = {
 	user: {
 		firstTime: true,
@@ -21,6 +17,13 @@ var model = {
 	once: {
 		// data that changed once
 		plantY: -1,
+	},
+	layers: {
+		level: {
+			bg: null,
+			level: null,
+			sidebar: null,
+		},
 	},
 	async initUser() {
 		if (app.insideFacebook) {

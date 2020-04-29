@@ -24,7 +24,7 @@ var CloudPrefab = cc.Node.extend({
 			this.shader.use()
 
 			if (cc.sys.isNative) {
-				var glProgram_state = cc.GLProgramState.getOrCreateWithGLProgram(this.shader)
+				const glProgram_state = cc.GLProgramState.getOrCreateWithGLProgram(this.shader)
 				this.sprite.setGLProgramState(glProgram_state)
 			} else {
 				this.sprite.shaderProgram = this.shader

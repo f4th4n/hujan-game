@@ -1,5 +1,3 @@
-// http://www.cocos2d-iphone.org
-
 attribute vec4 a_position;
 attribute vec2 a_texCoord;
 
