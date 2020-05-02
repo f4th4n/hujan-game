@@ -9,10 +9,9 @@ layers.play.Level = cc.Layer.extend({
 		this.loadImages()
 		this.printHelper()
 		const cloud = this.printCloud()
-		const raindrop = this.printRaindrop(cloud)
 		const ground = this.printGround()
 
-		this.scheduleCloud(cloud, raindrop)
+		this.scheduleCloud(cloud)
 		this.scheduleGround(ground) // scheduleOnce, set model.constant.plantY
 	},
 	loadImages() {
@@ -54,7 +53,8 @@ layers.play.Level = cc.Layer.extend({
 	},
 
 	// ---------------------------------------------------------------------------------------------- schedule
-	scheduleCloud: function (cloud, raindrop) {
+	moveCloudTimes: 0,
+	scheduleCloud: function (cloud) {
 		// TODO move cloud.schedule(fn) to cloud.js
 		// schedule move cloud
 		cloud.schedule((lapse) => {
@@ -73,10 +73,16 @@ layers.play.Level = cc.Layer.extend({
 			const timeClamp = time < 0.5 ? 0.5 : time // minimum animate in 500 ms
 			const moveTo = cc.moveTo(timeClamp, cc.p(model.local.cloud.scheduleUpdatePos.x, cloud.y))
 			const moveToEasing = moveTo.clone().easing(cc.easeBackOut())
-			cloud.runAction(cc.sequence(moveToEasing))
+			const callback = new cc.CallFunc(() => {
+				if(this.moveCloudTimes === 2) {
+					this.printRaindrop(cloud)
+				}
+			})
+			cloud.runAction(cc.sequence(moveToEasing, callback))
 
 			// make schedule stop
 			model.local.cloud.scheduleUpdatePos.on = +new Date() * 2
+			this.moveCloudTimes++
 		})
 
 		// schedule grow seeds and plants
