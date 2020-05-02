@@ -34,7 +34,7 @@ vec4 getColorByCoord(int y) {
 
 void main(void) {
   float alpha = texture2D(CC_Texture0, vec2(v_texCoord.x, v_texCoord.y)).a;
-  int y = int(mod(gl_FragCoord.y / 10.0, 10.0));
+  int y = int(mod(gl_FragCoord.y / 5.0, 5.0));
   gl_FragColor = getColorByCoord(y) * texture2D(CC_Texture0, v_texCoord); // with border
   // gl_FragColor = getColorByCoord(y) * alpha; // without border
 }
