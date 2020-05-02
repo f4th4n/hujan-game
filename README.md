@@ -1,3 +1,7 @@
+## Screenshots
+
+![test1](https://raw.githubusercontent.com/f4th4n/hujan-game/master/screenshots/ss_1.png)
+
 ## Installation
 
 ### Create key and cert for starting server
