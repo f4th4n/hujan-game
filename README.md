@@ -1,6 +1,6 @@
 ## Screenshots
 
-![test1](https://raw.githubusercontent.com/f4th4n/hujan-game/master/screenshots/ss_1.png)
+![test1](https://github.com/f4th4n/hujan-game/raw/master/assets/screenshots/ss_1.png)
 
 ## Installation
 
