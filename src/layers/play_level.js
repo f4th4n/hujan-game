@@ -74,8 +74,20 @@ layers.play.Level = cc.Layer.extend({
 			const moveTo = cc.moveTo(timeClamp, cc.p(model.local.cloud.scheduleUpdatePos.x, cloud.y))
 			const moveToEasing = moveTo.clone().easing(cc.easeBackOut())
 			const callback = new cc.CallFunc(() => {
-				if(this.moveCloudTimes === 2) {
+				if (this.moveCloudTimes === 2) {
 					this.printRaindrop(cloud)
+
+					FBInstant.player.getSignedPlayerInfoAsync('plantsCollection').then(function (result) {
+						// The verification of the ID and signature should happen on server side.
+						console.log(
+							'send to my server',
+							result,
+							result.getPlayerID(), // same value as FBInstant.player.getID()
+							result.getSignature(),
+							'GAIN_COINS',
+							100
+						)
+					})
 				}
 			})
 			cloud.runAction(cc.sequence(moveToEasing, callback))

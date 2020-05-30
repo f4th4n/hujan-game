@@ -40,7 +40,7 @@ layers.play.Sidebar = cc.Layer.extend({
       const sidebarKey = cc.LabelTTF.create(name, resource.fonts.pou.name, 16)
       const sortHeight = counter * height
       sidebarKey.setPosition(
-        cc.director.getWinSize().width - (8 / 100) * cc.director.getWinSize().width,
+        cc.director.getWinSize().width - (12 / 100) * cc.director.getWinSize().width,
         cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height - sortHeight
       )
       sidebarKey.opacity = this.RIGHT_SIDEBAR_OPACITY
@@ -54,6 +54,8 @@ layers.play.Sidebar = cc.Layer.extend({
   },
   sidebarValues: [],
   updateSidebarValues: function (sidebar) {
+    const minimumPlantCount = 5
+
     // remove old nodes, then update with new data
     for (let oldSidebarKey of this.sidebarValues) {
       this.removeChild(oldSidebarKey)
@@ -65,15 +67,17 @@ layers.play.Sidebar = cc.Layer.extend({
     var height = 0
     for (let id of ids) {
       const plants = model.user.plantsCollection.filter((plantId) => plantId === id)
-      const sidebarValue = cc.LabelTTF.create(plants.length + 'X', resource.fonts.pou.name, 16)
+      const sidebarValue = cc.LabelTTF.create(plants.length + ' / ' + minimumPlantCount.toString(), resource.fonts.pou.name, 16)
+      const color = (plants.length >= minimumPlantCount ? new cc.color(38, 163, 71, 255) : cc.color.BLACK)
       const sortHeight = counter * height
       sidebarValue.setPosition(
         cc.director.getWinSize().width - (3 / 100) * cc.director.getWinSize().width,
         cc.director.getWinSize().height - (5 / 100) * cc.director.getWinSize().height - sortHeight
       )
       sidebarValue.opacity = this.RIGHT_SIDEBAR_OPACITY
-      sidebarValue.setColor('black')
+      sidebarValue.setColor(color)
       sidebarValue.setAnchorPoint(1, 1)
+      window.sidebarValue = sidebarValue
       height = sidebarValue.height
       this.addChild(sidebarValue, helper.zOrder.medium)
       this.sidebarValues.push(sidebarValue)
