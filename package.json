@@ -7,7 +7,7 @@
 		"watch": "./node_modules/.bin/gulp watch",
 		"start": "http-server --ssl -c-1 -p 8080 -a 127.0.0.1 -C ./excluded/cert.pem --key ./excluded/key.pem",
 		"build-js": "./node_modules/.bin/gulp build",
-		"build-project": "sed -i -e 's/insideFacebook: false/insideFacebook: true/g' src/config.js && npm run build-js && sh build.sh"
+		"build-project": "sed -i -e 's/insideFacebook: false/insideFacebook: true/g' src/config.js && npm run build-js && sh build.sh; echo \"\n\n\nfinish building project, see project-direct.zip\""
 	},
 	"prettier": {
 		"tabWidth": 2,

@@ -1,3 +1,7 @@
+## Description
+
+Facebook instant game, written in javascript and built with Cocos2d-JS.
+
 ## Screenshots
 
 ![test1](https://github.com/f4th4n/hujan-game/raw/master/assets/screenshots/ss_1.png)
